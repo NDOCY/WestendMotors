@@ -1,0 +1,43 @@
+﻿@model WestendMotors.Models.AssignVehicleViewModel
+
+<h2>Assign Vehicle to User</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.UserId)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.VehicleId, "Vehicle")
+        @Html.DropDownListFor(m => m.VehicleId, (SelectList)ViewBag.Vehicles, "Select Vehicle", new { @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.PurchaseDate)
+        @Html.TextBoxFor(m => m.PurchaseDate, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Notes)
+        @Html.TextAreaFor(m => m.Notes, new { @class = "form-control" })
+    </div>
+
+    <h4>Service Schedule</h4>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.RecurrenceType, "Recurrence")
+        @Html.DropDownListFor(m => m.RecurrenceType, (SelectList)ViewBag.RecurrenceOptions, "Select recurrence", new { @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.NextServiceDate, "Next Service Date")
+        @Html.TextBoxFor(m => m.NextServiceDate, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.ServiceNotes)
+        @Html.TextAreaFor(m => m.ServiceNotes, new { @class = "form-control" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Assign & Schedule</button>
+}

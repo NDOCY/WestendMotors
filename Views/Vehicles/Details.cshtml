@@ -1,0 +1,153 @@
+﻿@model WestendMotors.Models.Vehicle
+
+@{
+    ViewBag.Title = Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left: Interactive Images -->
+        <div class="col-md-6">
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <!-- Main Image -->
+                <img id="mainImage" src="@Url.Content(Model.Images.First().ImagePath)"
+                     class="img-fluid rounded mb-3" alt="@Model.Title" style="max-height: 400px; object-fit: cover;" />
+
+                <!-- Thumbnails -->
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var img in Model.Images)
+                    {
+                        <img src="@Url.Content(img.ImagePath)"
+                             style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                             class="img-thumbnail thumb-img" />
+                    }
+                </div>
+            }
+            else
+            {
+                <p><em>No images available</em></p>
+            }
+        </div>
+
+        <!-- Right: Specs & Price -->
+        <div class="col-md-6">
+            <h2>@Model.Title</h2>
+            <h4 class="text-primary">Price: @Model.Price.ToString("C")</h4>
+            <p>@Model.Description</p>
+
+            @if (Model.Specs != null)
+            {
+                <table class="table table-striped">
+                    <tbody>
+                        <tr><th>Make</th><td>@Model.Specs.Make</td></tr>
+                        <tr><th>Model</th><td>@Model.Specs.Model</td></tr>
+                        <tr><th>Year</th><td>@Model.Specs.Year</td></tr>
+                        <tr><th>Mileage</th><td>@Model.Specs.Mileage.ToString("N0") km</td></tr>
+                        <tr><th>Fuel Type</th><td>@Model.Specs.FuelType</td></tr>
+                        <tr><th>Transmission</th><td>@Model.Specs.Transmission</td></tr>
+                        <tr><th>Color</th><td>@Model.Specs.Color</td></tr>
+                        <tr><th>Engine Size</th><td>@Model.Specs.EngineSize</td></tr>
+                        <tr><th>Seats</th><td>@Model.Specs.NumberOfSeats</td></tr>
+                        <tr><th>Body Type</th><td>@Model.Specs.BodyType</td></tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <hr />
+
+    <!-- Condition Notes & Features -->
+    @if (!string.IsNullOrEmpty(Model.Specs?.ConditionNotes))
+    {
+        <h4>Condition</h4>
+        <p>@Model.Specs.ConditionNotes</p>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Specs?.FeatureList))
+    {
+        <h4>Features</h4>
+        <ul>
+            @foreach (var feature in Model.Specs.FeatureList.Split(','))
+            {
+                <li>@feature.Trim()</li>
+            }
+        </ul>
+    }
+
+    <hr />
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Finance Calculator
+        </div>
+        <div class="card-body">
+            <form id="financeForm">
+                <div class="form-group mb-2">
+                    <label>Vehicle Price</label>
+                    <input type="number" class="form-control" id="vehiclePrice" value="@Model.Price" readonly />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label>Deposit</label>
+                    <input type="number" class="form-control" id="deposit" value="0" />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label>Interest Rate (%)</label>
+                    <input type="number" class="form-control" id="interestRate" value="10" step="0.01" />
+                </div>
+
+                <div class="form-group mb-2">
+                    <label>Loan Term (Months)</label>
+                    <input type="number" class="form-control" id="loanTerm" value="60" />
+                </div>
+
+                <button type="button" class="btn btn-success mt-2" onclick="calculateFinance()">Calculate</button>
+
+                <div class="mt-3">
+                    <h6>Estimated Monthly Payment:</h6>
+                    <h4 id="monthlyPayment" class="text-primary">R 0.00</h4>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <hr />
+
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2">
+        @Html.ActionLink("Book Test Drive", "Create", "Appointments", new { vehicleId = Model.Id, vehicleTitle = Model.Title }, new { @class = "btn btn-success btn-lg" })
+        <a href="@Url.Action("Create", "TradeInRequests", new { vehicleId = Model.Id })" class="btn btn-warning">Request Trade-In</a>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        // Thumbnail click updates main image
+        document.querySelectorAll(".thumb-img").forEach(img => {
+            img.addEventListener("click", function () {
+                document.getElementById("mainImage").src = this.src;
+            });
+        });
+    </script>
+    <script>
+        function calculateFinance() {
+            let price = parseFloat(document.getElementById("vehiclePrice").value);
+            let deposit = parseFloat(document.getElementById("deposit").value);
+            let rate = parseFloat(document.getElementById("interestRate").value) / 100 / 12; // monthly interest
+            let term = parseInt(document.getElementById("loanTerm").value);
+
+            let loanAmount = price - deposit;
+            let monthlyPayment = (loanAmount * rate) / (1 - Math.pow(1 + rate, -term));
+
+            if (!isNaN(monthlyPayment)) {
+                document.getElementById("monthlyPayment").innerText = "R " + monthlyPayment.toFixed(2);
+            } else {
+                document.getElementById("monthlyPayment").innerText = "R 0.00";
+            }
+        }
+    </script>
+}

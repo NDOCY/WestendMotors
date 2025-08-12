@@ -1,0 +1,57 @@
+﻿@model WestendMotors.Models.AdminDashboardViewModel
+@{
+    ViewBag.Title = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center p-3 bg-light">
+                <h4>Available Vehicles</h4>
+                <p class="display-6">@Model.AvailableVehicleCount</p>
+                <a href="@Url.Action("Index", "Vehicles")" class="btn btn-primary">Manage</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-3 bg-light">
+                <h4>Sold Vehicles</h4>
+                <p class="display-6">@Model.SoldVehicleCount</p>
+                <a href="@Url.Action("Sold", "Vehicles")" class="btn btn-primary">View</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-3 bg-light">
+                <h4>Appointments</h4>
+                <p class="display-6">@Model.AppointmentCount</p>
+                <a href="@Url.Action("Index", "Appointments")" class="btn btn-primary">Manage</a>
+            </div>
+        </div>
+    </div>
+
+    <h3>Upcoming Appointments</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Vehicle</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appt in Model.UpcomingAppointments)
+            {
+                <tr>
+                    <td>@appt.Customer.FullName</td>
+                    <td>@appt.AppointmentDate.ToString("g")</td>
+                    <td>@appt.Vehicle?.Title</td>
+                    <td>
+                        <a href="@Url.Action("Details", "Appointments", new { id = appt.AppointmentId })" class="btn btn-sm btn-info">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

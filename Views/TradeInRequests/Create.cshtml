@@ -1,0 +1,54 @@
+﻿@model WestendMotors.Models.TradeInRequest
+@{
+    var targetVehicle = ViewBag.TargetVehicle as WestendMotors.Models.Vehicle;
+}
+
+<h2>Trade-In Request</h2>
+<div class="row">
+    <!-- Left side: dealership vehicle -->
+    <div class="col-md-6">
+        <h3>@targetVehicle.Title</h3>
+        <p>Price: @targetVehicle.Price.ToString("C")</p>
+        <p>Make: @targetVehicle.Specs.Make</p>
+        <p>Model: @targetVehicle.Specs.Model</p>
+        <p>Year: @targetVehicle.Specs.Year</p>
+        <p>Mileage: @targetVehicle.Specs.Mileage</p>
+        <p>Fuel: @targetVehicle.Specs.FuelType</p>
+
+        <div>
+            @foreach (var img in targetVehicle.Images)
+            {
+                <img src="@img.ImagePath" class="img-thumbnail" style="max-width:150px;" />
+            }
+        </div>
+    </div>
+
+    <!-- Right side: customer car form -->
+    <div class="col-md-6">
+        @using (Html.BeginForm("Create", "TradeInRequests", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.HiddenFor(m => m.TargetVehicleId)
+
+            @Html.LabelFor(m => m.Make)
+            @Html.TextBoxFor(m => m.Make, new { @class = "form-control" })
+
+            @Html.LabelFor(m => m.Model)
+            @Html.TextBoxFor(m => m.Model, new { @class = "form-control" })
+
+            @Html.LabelFor(m => m.Year)
+            @Html.TextBoxFor(m => m.Year, new { @class = "form-control" })
+
+            @Html.LabelFor(m => m.Mileage)
+            @Html.TextBoxFor(m => m.Mileage, new { @class = "form-control" })
+
+            @Html.LabelFor(m => m.EstimatedValue)
+            @Html.TextBoxFor(m => m.EstimatedValue, new { @class = "form-control" })
+
+            <label>Upload Images</label>
+            <input type="file" name="customerImages" multiple class="form-control" />
+
+            <br />
+            <button type="submit" class="btn btn-primary">Submit Trade-In Request</button>
+        }
+    </div>
+</div>

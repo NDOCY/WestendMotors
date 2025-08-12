@@ -1,0 +1,123 @@
+﻿@model WestendMotors.Models.DashboardViewModel
+
+@{
+    ViewBag.Title = "Cars for Sale";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">Cars for Sale</h2>
+
+    <!-- Filters -->
+    <form id="filterForm" method="get" class="row g-3 mb-4 p-3 bg-light rounded">
+        <div class="col-md-3">
+            <input type="text" name="search" class="form-control" placeholder="Search..." value="@Request["search"]" />
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="make" class="form-control" placeholder="Make" value="@Request["make"]" />
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="model" class="form-control" placeholder="Model" value="@Request["model"]" />
+        </div>
+        <div class="col-md-1">
+            <input type="number" name="yearFrom" class="form-control" placeholder="From" value="@Request["yearFrom"]" />
+        </div>
+        <div class="col-md-1">
+            <input type="number" name="yearTo" class="form-control" placeholder="To" value="@Request["yearTo"]" />
+        </div>
+        <div class="col-md-1">
+            <input type="number" name="minPrice" class="form-control" placeholder="Min" value="@Request["minPrice"]" />
+        </div>
+        <div class="col-md-1">
+            <input type="number" name="maxPrice" class="form-control" placeholder="Max" value="@Request["maxPrice"]" />
+        </div>
+        <div class="col-md-1">
+            <select name="fuelType" class="form-control">
+                <option value="">Fuel</option>
+                <option value="Petrol">Petrol</option>
+                <option value="Diesel">Diesel</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Electric">Electric</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <select name="transmission" class="form-control">
+                <option value="">Trans</option>
+                <option value="Manual">Manual</option>
+                <option value="Automatic">Automatic</option>
+            </select>
+        </div>
+
+        <div class="col-md-12 d-flex gap-2">
+            <select name="sort" class="form-control w-auto">
+                <option value="">Sort By</option>
+                <option value="newest">Newest</option>
+                <option value="priceLow">Price: Low to High</option>
+                <option value="priceHigh">Price: High to Low</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <button type="button" id="resetFilters" class="btn btn-secondary">Reset</button>
+        </div>
+    </form>
+
+    <!-- Results -->
+    <div id="results">
+        @Html.Partial("_VehicleGrid", Model)
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        (function ($) {
+            var $form = $('#filterForm');
+            var $results = $('#results');
+
+            // Submit filters via AJAX
+            $form.on('submit', function (e) {
+                e.preventDefault();
+                loadGrid(1);
+            });
+
+            // Reset filters
+            $('#resetFilters').on('click', function () {
+                $form[0].reset();
+                loadGrid(1);
+            });
+
+            // Handle pagination clicks (delegated)
+            $results.on('click', '.ajax-page', function (e) {
+                e.preventDefault();
+                var page = $(this).data('page') || 1;
+                loadGrid(page);
+            });
+
+            // Load grid helper
+            function loadGrid(page) {
+                var data = $form.serialize();
+                data += '&page=' + page;
+
+                $.ajax({
+                    url: '@Url.Action("Index", "CustomerDashboard")',
+                    data: data,
+                    type: 'GET',
+                    beforeSend: function () {
+                        $results.html('<div class="text-center py-5"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>');
+                    },
+                    success: function (html) {
+                        $results.html(html);
+                        // scroll to results
+                        $('html, body').animate({ scrollTop: $results.offset().top - 80 }, 250);
+                    },
+                    error: function () {
+                        $results.html('<div class="alert alert-danger">There was a problem loading results. Please try again.</div>');
+                    }
+                });
+            }
+
+            // Initialize - ensure any server-provided page parameter is respected
+            // (if you want initial load via AJAX, uncomment the next line)
+            // loadGrid(@Model.Page);
+        })(jQuery);
+    </script>
+}

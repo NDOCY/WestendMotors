@@ -1,0 +1,31 @@
+﻿@model WestendMotors.Models.Appointment
+
+<h2>Appointment Details</h2>
+
+<div>
+    <strong>Vehicle:</strong> @Model.Vehicle?.Title <br />
+    <strong>Customer:</strong> @Model.Customer?.FullName <br />
+    <strong>Appointment Date:</strong> @Model.AppointmentDate <br />
+    <strong>Notes:</strong> @Model.Notes <br />
+    <strong>Status:</strong> @Model.Status
+</div>
+
+<hr />
+
+@if (User.IsInRole("Admin"))
+{
+    <h4>Update Status</h4>
+    using (Html.BeginForm("UpdateStatus", "Appointments", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("id", Model.AppointmentId)
+
+        @Html.DropDownList("status", new SelectList(
+            new[] { "Pending", "Confirmed", "Completed", "Cancelled" },
+            Model.Status
+        ), new { @class = "form-control" })
+
+        <br />
+        <button type="submit" class="btn btn-primary">Save Status</button>
+    }
+}

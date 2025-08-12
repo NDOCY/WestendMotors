@@ -1,0 +1,29 @@
+﻿@model WestendMotors.Models.Appointment
+
+@{
+    ViewBag.Title = "Book Test Drive";
+}
+
+<h2>@ViewBag.VehicleTitle</h2>
+
+@using (Html.BeginForm("Create", "Appointments", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(m => m.VehicleId)
+    @Html.HiddenFor(m => m.AppointmentType)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.AppointmentDate)
+        @Html.TextBoxFor(m => m.AppointmentDate, new { @class = "form-control", type = "datetime-local", min = DateTime.Now.ToString("yyyy-MM-ddTHH:mm") })
+        @Html.ValidationMessageFor(m => m.AppointmentDate)
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Notes)
+        @Html.TextAreaFor(m => m.Notes, new { @class = "form-control", rows = 3 })
+        @Html.ValidationMessageFor(m => m.Notes)
+    </div>
+
+    <button type="submit" class="btn btn-success">Book Test Drive</button>
+}

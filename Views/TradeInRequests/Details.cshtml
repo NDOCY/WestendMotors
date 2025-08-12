@@ -1,0 +1,111 @@
+﻿@model WestendMotors.Models.TradeInRequest
+
+@{
+    ViewBag.Title = "Details";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>TradeInRequest</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Customer.FullName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Customer.FullName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Make)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Make)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Model)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Model)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Year)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Year)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Mileage)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Mileage)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ConditionNotes)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ConditionNotes)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EstimatedValue)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EstimatedValue)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.RequestDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.RequestDate)
+        </dd>
+
+    </dl>
+    @using (Html.BeginForm("UpdateStatus", "TradeInRequests", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("id", Model.TradeInRequestId)
+
+        <label>Status</label>
+        <select name="status" class="form-control">
+            <option value="Pending" @(Model.Status == "Pending" ? "selected" : "")>Pending</option>
+            <option value="Accepted" @(Model.Status == "Accepted" ? "selected" : "")>Accepted</option>
+            <option value="Declined" @(Model.Status == "Declined" ? "selected" : "")>Declined</option>
+            <option value="Cancelled" @(Model.Status == "Cancelled" ? "selected" : "")>Cancelled</option>
+            <option value="Postponed" @(Model.Status == "Postponed" ? "selected" : "")>Postponed</option>
+        </select>
+
+        <label>New Appointment Date (optional)</label>
+        <input type="datetime-local" name="newDate"
+               value="@(Model.NewAppointmentDate?.ToString("yyyy-MM-ddTHH:mm"))"
+               class="form-control mt-1" />
+
+        <label>Admin Notes</label>
+        <textarea name="notes" placeholder="Admin notes" class="form-control mt-1">@Model.AdminNotes</textarea>
+
+        <button type="submit" class="btn btn-sm btn-primary mt-2">Save</button>
+    }
+
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.TradeInRequestId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
