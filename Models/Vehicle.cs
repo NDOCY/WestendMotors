@@ -27,7 +27,7 @@ namespace WestendMotors.Models
 
         // Navigation properties
         public virtual VehicleSpecs Specs { get; set; }
-        public virtual ICollection<VehicleImage> Images { get; set; }
+        public virtual ICollection<VehicleImage> Images { get; set; } = new List<VehicleImage>();
 
         public Vehicle()
         {

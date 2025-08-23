@@ -25,9 +25,11 @@ namespace WestendMotors.Models
         [Required]
         public int Mileage { get; set; }
 
+        [Required]
         [StringLength(30)]
         public string FuelType { get; set; } = "";
 
+        [Required]
         [StringLength(30)]
         public string Transmission { get; set; } = "";
 
@@ -36,9 +38,11 @@ namespace WestendMotors.Models
 
         public double EngineSize { get; set; }
 
+        [Required]
         [Display(Name = "Number of Seats")]
         public int NumberOfSeats { get; set; }
 
+        [Required]
         [Display(Name = "Body Type")]
         [StringLength(30)]
         public string BodyType { get; set; } = "";

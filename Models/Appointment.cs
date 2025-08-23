@@ -19,10 +19,10 @@ namespace WestendMotors.Models
         [ForeignKey("VehicleId")]
         public virtual Vehicle Vehicle { get; set; }
 
-        public string Title { get; set; } // Vehicle title for display purposes
+        public string Title { get; set; }
 
         [Required, StringLength(50)]
-        public string AppointmentType { get; set; } // "Test Drive" or "Service"
+        public string AppointmentType { get; set; }
 
         [Required]
         [DataType(DataType.DateTime)]
@@ -30,9 +30,23 @@ namespace WestendMotors.Models
         public DateTime AppointmentDate { get; set; }
 
         [Required, StringLength(20)]
-        public string Status { get; set; } = "Pending"; // "Pending", "Approved", "Rejected"
+        public string Status { get; set; } = "Pending";
 
         [StringLength(500)]
         public string Notes { get; set; }
+
+        [StringLength(500)]
+        [Display(Name = "Admin Notes")]
+        public string AdminNotes { get; set; }
+
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Rescheduled Date")]
+        public DateTime? RescheduledDate { get; set; }
+
+        [Display(Name = "Original Appointment")]
+        public int? OriginalAppointmentId { get; set; }
+
+        [ForeignKey("OriginalAppointmentId")]
+        public virtual Appointment OriginalAppointment { get; set; }
     }
 }

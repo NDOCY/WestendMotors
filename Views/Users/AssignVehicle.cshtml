@@ -1,5 +1,17 @@
 ﻿@model WestendMotors.Models.AssignVehicleViewModel
+@{
+    ViewBag.Title = "Assign";
+    var role = Session["Role"] as string;
 
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
+}
 <h2>Assign Vehicle to User</h2>
 
 @using (Html.BeginForm())

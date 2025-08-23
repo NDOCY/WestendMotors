@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using WestendMotors.Services;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using WestendMotors.Models;
@@ -71,97 +74,110 @@ namespace WestendMotors.Controllers
         }
 
         // GET: Vehicles/Create
+        // GET: Vehicles/Create
         public ActionResult Create()
         {
-            var vehicle = new Vehicle
-            {
-                Specs = new VehicleSpecs()
-            };
-            return View(vehicle);
+            return View(new Vehicle { Specs = new VehicleSpecs() });
         }
 
-        // POST: Vehicles/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Vehicle vehicle)
+        public async Task<ActionResult> Create(Vehicle vehicle, IEnumerable<HttpPostedFileBase> imageFiles)
         {
+            System.Diagnostics.Debug.WriteLine($"Files received: {imageFiles?.Count() ?? 0}");
+
+            // Add debug logging for each file
+            if (imageFiles != null)
+            {
+                foreach (var file in imageFiles)
+                {
+                    System.Diagnostics.Debug.WriteLine($"File: {file?.FileName ?? "null"}, Size: {file?.ContentLength ?? 0}");
+                }
+            }
+
             try
             {
-                // Debug: Check if ModelState is valid
-                if (!ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
-                    // Log validation errors for debugging
-                    var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) })
-                        .ToList();
+                    var blobService = new BlobService(ConfigurationManager.AppSettings["AzureBlobConnection"]);
 
-                    // Return the view with validation errors
-                    return View(vehicle);
-                }
-
-                vehicle.DateAdded = DateTime.Now;
-                vehicle.IsAvailable = true;
-
-                // Initialize Images collection if null
-                if (vehicle.Images == null)
-                {
+                    vehicle.DateAdded = DateTime.Now;
+                    vehicle.IsAvailable = true;
                     vehicle.Images = new List<VehicleImage>();
-                }
 
-                // Handle image uploads BEFORE saving to database
-                var uploadedFiles = new List<string>();
-                for (int i = 0; i < Request.Files.Count; i++)
-                {
-                    var file = Request.Files[i];
-                    if (file != null && file.ContentLength > 0 && !string.IsNullOrEmpty(file.FileName))
+                    // Initialize Specs if null
+                    if (vehicle.Specs == null)
                     {
-                        var uploadDir = Server.MapPath("~/Uploads/Vehicles");
-                        if (!Directory.Exists(uploadDir))
-                            Directory.CreateDirectory(uploadDir);
+                        vehicle.Specs = new VehicleSpecs();
+                    }
 
-                        var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-                        var filePath = Path.Combine(uploadDir, fileName);
-                        file.SaveAs(filePath);
-                        uploadedFiles.Add("/Uploads/Vehicles/" + fileName);
+                    // Handle image uploads
+                    if (imageFiles != null && imageFiles.Any(f => f != null && f.ContentLength > 0))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Processing {imageFiles.Count(f => f != null && f.ContentLength > 0)} valid images");
+
+                        foreach (var file in imageFiles.Where(f => f != null && f.ContentLength > 0))
+                        {
+                            try
+                            {
+                                // Validate file type
+                                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                                var fileExtension = Path.GetExtension(file.FileName).ToLower();
+
+                                if (!allowedExtensions.Contains(fileExtension))
+                                {
+                                    ModelState.AddModelError("", $"File {file.FileName} is not a valid image format. Allowed formats: JPG, PNG, GIF");
+                                    return View(vehicle);
+                                }
+
+                                // Validate file size (e.g., max 5MB)
+                                if (file.ContentLength > 5 * 1024 * 1024)
+                                {
+                                    ModelState.AddModelError("", $"File {file.FileName} is too large. Maximum size is 5MB.");
+                                    return View(vehicle);
+                                }
+
+                                string imageUrl = await blobService.UploadVehicleImageAsync(file);
+                                vehicle.Images.Add(new VehicleImage { ImagePath = imageUrl });
+                                System.Diagnostics.Debug.WriteLine($"Successfully uploaded: {file.FileName} -> {imageUrl}");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error uploading {file.FileName}: {ex.Message}");
+                                ModelState.AddModelError("", $"Error uploading {file.FileName}: {ex.Message}");
+                                return View(vehicle);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("No valid image files received");
+                    }
+
+                    db.Vehicles.Add(vehicle);
+                    await db.SaveChangesAsync();
+
+                    System.Diagnostics.Debug.WriteLine($"Vehicle created successfully with ID: {vehicle.Id}");
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    // Log validation errors
+                    foreach (var modelError in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Validation Error: {modelError.ErrorMessage}");
                     }
                 }
-
-                // Add vehicle with specs in one transaction
-                db.Vehicles.Add(vehicle);
-
-                // Set up the relationship properly
-                if (vehicle.Specs != null)
-                {
-                    vehicle.Specs.Vehicle = vehicle;
-                }
-
-                // Add images to the vehicle
-                foreach (var imagePath in uploadedFiles)
-                {
-                    vehicle.Images.Add(new VehicleImage
-                    {
-                        Vehicle = vehicle,
-                        ImagePath = imagePath
-                    });
-                }
-
-                // Save everything in one transaction
-                db.SaveChanges();
-
-                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                // Get the actual inner exception message
-                var innerMessage = ex.InnerException?.Message ?? ex.Message;
-                var fullMessage = ex.InnerException != null ?
-                    $"{ex.Message} Inner Exception: {innerMessage}" :
-                    ex.Message;
-
-                ModelState.AddModelError("", "An error occurred while saving the vehicle: " + fullMessage);
-                return View(vehicle);
+                System.Diagnostics.Debug.WriteLine($"Exception in Create method: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
             }
+
+            // If we got this far, something failed - return to view
+            return View(vehicle);
         }
 
         // GET: Vehicles/Edit/5
@@ -212,30 +228,36 @@ namespace WestendMotors.Controllers
             return View(vehicle);
         }
 
-        // POST: Vehicles/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Vehicle vehicle = db.Vehicles.Include(v => v.Specs).Include(v => v.Images).FirstOrDefault(v => v.Id == id);
+            Vehicle vehicle = await db.Vehicles
+                .Include(v => v.Images)
+                .Include(v => v.Specs)
+                .FirstOrDefaultAsync(v => v.Id == id);
 
-            // Delete associated specs
-            if (vehicle.Specs != null)
+            if (vehicle != null)
             {
-                db.VehicleSpec.Remove(vehicle.Specs);
+                var blobService = new BlobService(ConfigurationManager.AppSettings["AzureBlobConnection"]);
+
+                // Delete all associated images from blob storage
+                foreach (var image in vehicle.Images)
+                {
+                    await blobService.DeleteImageAsync(image.ImagePath);
+                }
+
+                // Remove from database
+                if (vehicle.Specs != null)
+                {
+                    db.VehicleSpec.Remove(vehicle.Specs);
+                }
+                db.Vehicles.Remove(vehicle);
+                await db.SaveChangesAsync();
             }
 
-            // Delete associated images
-            if (vehicle.Images != null)
-            {
-                db.VehicleImages.RemoveRange(vehicle.Images);
-            }
-
-            db.Vehicles.Remove(vehicle);
-            db.SaveChanges();
             return RedirectToAction("Index");
         }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)

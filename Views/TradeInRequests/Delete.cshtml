@@ -2,6 +2,16 @@
 
 @{
     ViewBag.Title = "Delete";
+    var role = Session["Role"] as string;
+
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
 }
 
 <h2>Delete</h2>
@@ -51,14 +61,14 @@
             @Html.DisplayFor(model => model.Mileage)
         </dd>
 
-        <dt>
+       @* <dt>
             @Html.DisplayNameFor(model => model.Condition)
         </dt>
 
         <dd>
             @Html.DisplayFor(model => model.Condition)
         </dd>
-
+           *@
         <dt>
             @Html.DisplayNameFor(model => model.EstimatedValue)
         </dt>

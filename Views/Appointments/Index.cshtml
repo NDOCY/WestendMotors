@@ -2,6 +2,16 @@
 
 @{
     ViewBag.Title = "Index";
+    var role = Session["Role"] as string;
+
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
 }
 
 <h2>Index</h2>
@@ -15,7 +25,7 @@
             @Html.DisplayNameFor(model => model.Customer.FullName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Vehicle.Make)
+            @Html.DisplayNameFor(model => model.Vehicle.Title)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.AppointmentType)
@@ -38,7 +48,7 @@
             @Html.DisplayFor(modelItem => item.Customer.FullName)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Vehicle.Make)
+            @Html.DisplayFor(modelItem => item.Vehicle.Title)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.AppointmentType)

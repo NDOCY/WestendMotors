@@ -2,66 +2,200 @@
 
 @{
     ViewBag.Title = "Cars for Sale";
+    Layout = "~/Views/Shared/_Layout_User.cshtml";
 }
 
 <div class="container mt-4">
-    <h2 class="mb-3">Cars for Sale</h2>
+    <!-- Header Section -->
+    <div class="page-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div>
+                        <h2 class="mb-1">Cars for Sale</h2>
+                        <p class="text-muted mb-0">Find your perfect vehicle from our quality selection</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-right">
+                <div class="header-stats">
+                    <span class="stat-item">
+                        <i class="fas fa-car-side"></i>
+                        <strong>@Model?.VehicleCount</strong> Available
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Filters -->
-    <form id="filterForm" method="get" class="row g-3 mb-4 p-3 bg-light rounded">
-        <div class="col-md-3">
-            <input type="text" name="search" class="form-control" placeholder="Search..." value="@Request["search"]" />
-        </div>
-        <div class="col-md-2">
-            <input type="text" name="make" class="form-control" placeholder="Make" value="@Request["make"]" />
-        </div>
-        <div class="col-md-2">
-            <input type="text" name="model" class="form-control" placeholder="Model" value="@Request["model"]" />
-        </div>
-        <div class="col-md-1">
-            <input type="number" name="yearFrom" class="form-control" placeholder="From" value="@Request["yearFrom"]" />
-        </div>
-        <div class="col-md-1">
-            <input type="number" name="yearTo" class="form-control" placeholder="To" value="@Request["yearTo"]" />
-        </div>
-        <div class="col-md-1">
-            <input type="number" name="minPrice" class="form-control" placeholder="Min" value="@Request["minPrice"]" />
-        </div>
-        <div class="col-md-1">
-            <input type="number" name="maxPrice" class="form-control" placeholder="Max" value="@Request["maxPrice"]" />
-        </div>
-        <div class="col-md-1">
-            <select name="fuelType" class="form-control">
-                <option value="">Fuel</option>
-                <option value="Petrol">Petrol</option>
-                <option value="Diesel">Diesel</option>
-                <option value="Hybrid">Hybrid</option>
-                <option value="Electric">Electric</option>
-            </select>
-        </div>
-        <div class="col-md-1">
-            <select name="transmission" class="form-control">
-                <option value="">Trans</option>
-                <option value="Manual">Manual</option>
-                <option value="Automatic">Automatic</option>
-            </select>
+    <!-- Enhanced Filters -->
+    <div class="filter-panel mb-4">
+        <form id="filterForm" method="get">
+            <div class="filter-header">
+                <h5><i class="fas fa-filter mr-2"></i>Search & Filter</h5>
+                <button type="button" id="toggleFilters" class="btn btn-link btn-sm">
+                    <i class="fas fa-chevron-up"></i> Advanced Filters
+                </button>
+            </div>
+
+            <!-- Primary Search Row -->
+            <div class="filter-row primary-filters">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="search" class="form-control"
+                                   placeholder="Search by make, model, or keyword..."
+                                   value="@Request["search"]" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Price Range</label>
+                            <select name="priceRange" class="form-control">
+                                <option value="">Any Price</option>
+                                <option value="0-15000">Under R15,000</option>
+                                <option value="15000-30000">R15,000 - R30,000</option>
+                                <option value="30000-50000">R30,000 - R50,000</option>
+                                <option value="50000-100000">R50,000 - R100,000</option>
+                                <option value="100000-200000">R100,000 - R200,000</option>
+                                <option value="200000+">R200,000+</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Fuel Type</label>
+                            <select name="fuelType" class="form-control">
+                                <option value="">Any Fuel</option>
+                                <option value="Petrol">Petrol</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Hybrid">Hybrid</option>
+                                <option value="Electric">Electric</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Transmission</label>
+                            <select name="transmission" class="form-control">
+                                <option value="">Any Transmission</option>
+                                <option value="Manual">Manual</option>
+                                <option value="Automatic">Automatic</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Sort By</label>
+                            <select name="sort" class="form-control">
+                                <option value="">Relevance</option>
+                                <option value="newest">Newest First</option>
+                                <option value="priceLow">Price: Low to High</option>
+                                <option value="priceHigh">Price: High to Low</option>
+                                <option value="mileage">Lowest Mileage</option>
+                                <option value="year">Newest Year</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Filters (Collapsible) -->
+            <div class="filter-row advanced-filters" id="advancedFilters">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Make</label>
+                            <input type="text" name="make" class="form-control"
+                                   placeholder="e.g. Toyota" value="@Request["make"]" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Model</label>
+                            <input type="text" name="model" class="form-control"
+                                   placeholder="e.g. Corolla" value="@Request["model"]" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Year From</label>
+                            <input type="number" name="yearFrom" class="form-control"
+                                   placeholder="2015" min="1990" max="2025" value="@Request["yearFrom"]" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Year To</label>
+                            <input type="number" name="yearTo" class="form-control"
+                                   placeholder="2024" min="1990" max="2025" value="@Request["yearTo"]" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Min Price</label>
+                            <input type="number" name="minPrice" class="form-control"
+                                   placeholder="0" min="0" step="1000" value="@Request["minPrice"]" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-label">Max Price</label>
+                            <input type="number" name="maxPrice" class="form-control"
+                                   placeholder="500000" min="0" step="1000" value="@Request["maxPrice"]" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search mr-2"></i>Search Vehicles
+                </button>
+                <button type="button" id="resetFilters" class="btn btn-outline-secondary">
+                    <i class="fas fa-undo mr-2"></i>Reset Filters
+                </button>
+                <div class="active-filters" id="activeFilters"></div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section">
+        <div class="results-header mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="results-info">
+                    <span class="results-count">Showing results for your search</span>
+                </div>
+                <div class="view-toggle">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" id="listView">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="col-md-12 d-flex gap-2">
-            <select name="sort" class="form-control w-auto">
-                <option value="">Sort By</option>
-                <option value="newest">Newest</option>
-                <option value="priceLow">Price: Low to High</option>
-                <option value="priceHigh">Price: High to Low</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <button type="button" id="resetFilters" class="btn btn-secondary">Reset</button>
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-state" style="display: none;">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Searching for vehicles...</p>
+            </div>
         </div>
-    </form>
 
-    <!-- Results -->
-    <div id="results">
-        @Html.Partial("_VehicleGrid", Model)
+        <!-- Results Container -->
+        <div id="results">
+            @Html.Partial("_VehicleGrid", Model)
+        </div>
     </div>
 </div>
 
@@ -72,6 +206,30 @@
         (function ($) {
             var $form = $('#filterForm');
             var $results = $('#results');
+            var $loadingState = $('#loadingState');
+            var $advancedFilters = $('#advancedFilters');
+            var isAdvancedVisible = false;
+
+            // Initialize
+            init();
+
+            function init() {
+                // Hide advanced filters initially
+                $advancedFilters.hide();
+                updateActiveFilters();
+            }
+
+            // Toggle advanced filters
+            $('#toggleFilters').on('click', function() {
+                isAdvancedVisible = !isAdvancedVisible;
+                if (isAdvancedVisible) {
+                    $advancedFilters.slideDown(300);
+                    $(this).html('<i class="fas fa-chevron-down"></i> Hide Advanced');
+                } else {
+                    $advancedFilters.slideUp(300);
+                    $(this).html('<i class="fas fa-chevron-up"></i> Advanced Filters');
+                }
+            });
 
             // Submit filters via AJAX
             $form.on('submit', function (e) {
@@ -82,6 +240,7 @@
             // Reset filters
             $('#resetFilters').on('click', function () {
                 $form[0].reset();
+                updateActiveFilters();
                 loadGrid(1);
             });
 
@@ -92,32 +251,438 @@
                 loadGrid(page);
             });
 
+            // View toggle functionality
+            $('#gridView, #listView').on('click', function() {
+                $('.view-toggle .btn').removeClass('active');
+                $(this).addClass('active');
+
+                var viewType = $(this).attr('id') === 'gridView' ? 'grid' : 'list';
+                $('#results').removeClass('list-view grid-view').addClass(viewType + '-view');
+            });
+
+            // Real-time filter updates
+            $form.find('input, select').on('change', function() {
+                updateActiveFilters();
+            });
+
+            // Update active filters display
+            function updateActiveFilters() {
+                var activeFilters = [];
+                var $container = $('#activeFilters');
+
+                $form.find('input, select').each(function() {
+                    var $field = $(this);
+                    var value = $field.val();
+                    var name = $field.attr('name');
+
+                    if (value && value !== '' && name !== 'sort') {
+                        var label = $field.closest('.form-group').find('label').text() || name;
+                        activeFilters.push({
+                            name: name,
+                            label: label,
+                            value: value
+                        });
+                    }
+                });
+
+                if (activeFilters.length > 0) {
+                    var html = '<div class="mt-2"><small class="text-muted">Active filters:</small> ';
+                    activeFilters.forEach(function(filter) {
+                        html += '<span class="filter-tag">' + filter.label + ': ' + filter.value +
+                               ' <button type="button" class="remove-filter" data-field="' + filter.name + '">&times;</button></span>';
+                    });
+                    html += '</div>';
+                    $container.html(html);
+                } else {
+                    $container.empty();
+                }
+            }
+
+            // Remove individual filter
+            $(document).on('click', '.remove-filter', function() {
+                var fieldName = $(this).data('field');
+                $form.find('[name="' + fieldName + '"]').val('');
+                updateActiveFilters();
+                loadGrid(1);
+            });
+
             // Load grid helper
             function loadGrid(page) {
                 var data = $form.serialize();
                 data += '&page=' + page;
 
+                // Show loading state
+                $loadingState.show();
+                $results.hide();
+
                 $.ajax({
                     url: '@Url.Action("Index", "CustomerDashboard")',
                     data: data,
                     type: 'GET',
-                    beforeSend: function () {
-                        $results.html('<div class="text-center py-5"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>');
-                    },
                     success: function (html) {
-                        $results.html(html);
-                        // scroll to results
-                        $('html, body').animate({ scrollTop: $results.offset().top - 80 }, 250);
+                        $loadingState.hide();
+                        $results.html(html).show();
+
+                        // Smooth scroll to results
+                        $('html, body').animate({
+                            scrollTop: $results.offset().top - 100
+                        }, 300);
+
+                        // Update results count
+                        updateResultsCount(html);
                     },
                     error: function () {
-                        $results.html('<div class="alert alert-danger">There was a problem loading results. Please try again.</div>');
+                        $loadingState.hide();
+                        $results.html('<div class="error-state"><div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>There was a problem loading results. Please try again.</div></div>').show();
                     }
                 });
             }
 
-            // Initialize - ensure any server-provided page parameter is respected
-            // (if you want initial load via AJAX, uncomment the next line)
-            // loadGrid(@Model.Page);
+            // Update results count
+            function updateResultsCount(html) {
+                var $temp = $('<div>').html(html);
+                var count = $temp.find('.vehicle-item').length;
+                $('.results-count').text('Showing ' + count + ' vehicles');
+            }
+
         })(jQuery);
     </script>
+}
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Customer Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header-stats {
+            text-align: right;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.15);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-item i {
+            margin-right: 0.5rem;
+            opacity: 0.8;
+        }
+
+        /* Filter Panel */
+        .filter-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .filter-header {
+            background: #f8f9fa;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .filter-row {
+            padding: 1.5rem;
+        }
+
+        .filter-row.primary-filters {
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .filter-row.advanced-filters {
+            background: #fafbfc;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .filter-actions {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .btn-link:hover {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        /* Active Filters */
+        .filter-tag {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            display: inline-block;
+            margin-bottom: 0.25rem;
+        }
+
+        .remove-filter {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .remove-filter:hover {
+            opacity: 0.8;
+        }
+
+        /* Results Section */
+        .results-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .results-header {
+            background: #f8f9fa;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-count {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .view-toggle .btn {
+            border-color: #dee2e6;
+            color: #6c757d;
+            width: 40px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view-toggle .btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        /* Loading State */
+        .loading-state {
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+
+        .spinner-border {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+
+        /* Error State */
+        .error-state {
+            padding: 1.5rem;
+        }
+
+        .error-state .alert {
+            margin: 0;
+            border-radius: 8px;
+        }
+
+        /* Results Grid/List View */
+        #results {
+            padding: 1.5rem;
+            min-height: 200px;
+        }
+
+        /* Animation */
+        .filter-panel, .results-section {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .page-header .row {
+                text-align: center;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .header-stats {
+                text-align: center;
+                margin-top: 1rem;
+            }
+
+            .filter-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .filter-row {
+                padding: 1rem;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-actions .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .results-header .d-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .view-toggle {
+                align-self: center;
+            }
+
+            #results {
+                padding: 1rem;
+            }
+        }
+
+        /* Smooth transitions */
+        .filter-row, .form-control, .btn {
+            transition: all 0.3s ease;
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus, .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+    </style>
 }

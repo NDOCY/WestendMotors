@@ -1,0 +1,17 @@
+﻿@{
+    ViewBag.Title = "Trade-In Request Submitted";
+    Layout = "~/Views/Shared/_Layout_User.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="alert alert-success">
+        <h2>Thank You!</h2>
+        <p>Your trade-in request has been submitted successfully.</p>
+        <p>We'll review your information and contact you shortly.</p>
+    </div>
+
+    <div class="mt-3">
+        @Html.ActionLink("Home Page", "Index", "Dashboard", null, new { @class = "btn btn-primary" })
+        @Html.ActionLink("View My Requests", "Index", "TradeInRequests", null, new { @class = "btn btn-secondary" })
+    </div>
+</div>

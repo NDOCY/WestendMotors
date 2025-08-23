@@ -90,7 +90,7 @@ namespace WestendMotors.Controllers
 
         public ActionResult Admin()
         {
-            // Summary data
+            /*// Summary data
             var availableCount = db.Vehicles.Count(v => v.IsAvailable);
             var soldCount = db.Vehicles.Count(v => !v.IsAvailable);
             var appointmentCount = db.Appointments.Count();
@@ -106,9 +106,58 @@ namespace WestendMotors.Controllers
                 SoldVehicleCount = soldCount,
                 AppointmentCount = appointmentCount,
                 UpcomingAppointments = upcomingAppointments
+            };*/
+
+            var model = new AdminDashboardViewModel
+            {
+                AvailableVehicleCount = db.Vehicles.Count(v => v.IsAvailable),
+                SoldVehicleCount = db.Vehicles.Count(v => !v.IsAvailable),
+                AppointmentCount = db.Appointments.Count(),
+                TradeInRequestCount = db.TradeInRequests.Count(),
+                ServiceRecordCount = db.ServiceRecords.Count(),
+                UserCount = db.Users.Count(),
+
+                UpcomingAppointments = db.Appointments
+            .Include(a => a.Customer)
+            .Include(a => a.Vehicle)
+            .Where(a => a.AppointmentDate >= DateTime.Now)
+            .OrderBy(a => a.AppointmentDate)
+            .Take(5)
+            .ToList(),
+
+                RecentTradeIns = db.TradeInRequests
+            .Include(t => t.Customer)
+            .OrderByDescending(t => t.RequestDate)
+            .Take(5)
+            .ToList(),
+
+                RecentServices = db.ServiceRecords
+            //.Include(s => s.Customer)
+            .Include(s => s.Vehicle)
+            .OrderByDescending(s => s.ServiceDate)
+            .Take(5)
+            .ToList(),
+
+                RecentUsers = db.Users
+            .OrderByDescending(u => u.UserId)
+            .Take(5)
+            .ToList(),
+
+                // Optional status breakdowns
+                AppointmentStatusCounts = db.Appointments
+            .GroupBy(a => a.Status)
+            .ToDictionary(g => g.Key, g => g.Count()),
+
+                TradeInStatusCounts = db.TradeInRequests
+            .GroupBy(t => t.Status)
+            .ToDictionary(g => g.Key, g => g.Count()),
+
+                UserRoleCounts = db.Users
+            .GroupBy(u => u.Role)
+            .ToDictionary(g => g.Key, g => g.Count())
             };
 
-            return View(vm);
+            return View(model);
         }
 
     }

@@ -8,7 +8,7 @@ namespace WestendMotors.Models
 {
 	public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext() : base("ApplicationDB") { }
+        public ApplicationDbContext() : base("WestendDB") { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
@@ -19,6 +19,8 @@ namespace WestendMotors.Models
         public DbSet<VehicleSpecs> VehicleSpec { get; set; }
         public DbSet<UserVehicle> UserVehicles { get; set; }
         public DbSet<ServiceSchedule> ServiceSchedules { get; set; }
+        public DbSet<TradeInImage> TradeInImages { get; set; }
+        public DbSet<TradeInAppointment> TradeInAppointments { get; set; }
 
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

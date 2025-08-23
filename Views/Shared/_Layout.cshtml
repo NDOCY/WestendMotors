@@ -4,59 +4,820 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - Westend Motors</title>
+
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    @RenderSection("Styles", required: false)
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #ffffff;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+            --navbar-height: 70px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding-top: var(--navbar-height);
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Enhanced Navigation Bar */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+            box-shadow: 0 2px 20px rgba(44, 62, 80, 0.15);
+            border-bottom: 3px solid var(--accent-color);
+            padding: 0.75rem 0;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            height: var(--navbar-height);
+        }
+
+        .navbar.scrolled {
+            box-shadow: 0 4px 25px rgba(44, 62, 80, 0.2);
+            backdrop-filter: blur(15px);
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem !important;
+            font-weight: 800 !important;
+            color: var(--text-light) !important;
+            text-decoration: none !important;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .navbar-brand::before {
+            content: "\f1b9";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: #FFD700;
+            font-size: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            -webkit-text-fill-color: #FFD700;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            text-decoration: none !important;
+        }
+
+        /* Navigation Links */
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500 !important;
+            font-size: 0.95rem !important;
+            padding: 0.75rem 1.25rem !important;
+            border-radius: 8px !important;
+            transition: var(--transition) !important;
+            margin: 0 0.25rem !important;
+            position: relative;
+            text-decoration: none !important;
+        }
+
+        .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            transition: width 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--text-light) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            transform: translateY(-1px);
+        }
+
+        .navbar-nav .nav-link:hover::before {
+            width: 80%;
+        }
+
+        .navbar-nav .nav-link.active {
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: var(--text-light) !important;
+        }
+
+        .navbar-nav .nav-link.active::before {
+            width: 80%;
+        }
+
+        /* Enhanced User Dropdown */
+        .nav-item.dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 25px !important;
+            padding: 0.5rem 1rem !important;
+            transition: var(--transition) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .dropdown-toggle:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            transform: translateY(-1px);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+            transition: var(--transition);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dropdown-toggle:hover .user-avatar {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .dropdown-menu {
+            background: var(--card-bg) !important;
+            border: none !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 0 !important;
+            margin-top: 0.5rem !important;
+            min-width: 220px !important;
+            backdrop-filter: blur(10px);
+            animation: dropdownFadeIn 0.2s ease-out;
+        }
+
+        @@keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1.5rem !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            color: var(--text-dark) !important;
+            transition: var(--transition) !important;
+            border-radius: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+        }
+
+        .dropdown-item::before {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            width: 16px;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .dropdown-item:first-child::before {
+            content: "\f007"; /* user icon */
+        }
+
+        .dropdown-item:last-child::before {
+            content: "\f2f5"; /* sign out icon */
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.05)) !important;
+            color: var(--accent-color) !important;
+            transform: translateX(3px);
+        }
+
+        .dropdown-divider {
+            border-color: var(--border-color) !important;
+            margin: 0.5rem 0 !important;
+            opacity: 0.5 !important;
+        }
+
+        /* Mobile Toggle Button */
+        .navbar-toggler {
+            border: none !important;
+            padding: 0.5rem !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px !important;
+            transition: var(--transition) !important;
+        }
+
+        .navbar-toggler:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none !important;
+            outline: 2px solid rgba(255, 215, 0, 0.5) !important;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+        }
+
+        /* Main Content Area */
+        .container.body-content {
+            max-width: 1400px;
+            padding: 2rem 15px 4rem 15px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced Footer */
+        footer {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+            padding: 2rem 0;
+            margin-top: 4rem;
+            border-top: 3px solid var(--accent-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.5), transparent);
+        }
+
+        footer p {
+            margin: 0;
+            text-align: center;
+            font-weight: 500;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        footer p::before {
+            content: "\f1f9";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: #FFD700;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--accent-color), #2980b9);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2980b9, var(--accent-color));
+        }
+
+        /* Page Loading Animation */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 991.98px) {
+            .navbar-brand {
+                font-size: 1.5rem !important;
+            }
+
+            .navbar-brand::before {
+                font-size: 1.2rem;
+            }
+
+            .navbar-nav {
+                margin-top: 1rem;
+                padding: 1rem 0;
+                background: rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                margin-top: 0.5rem;
+            }
+
+            .navbar-nav .nav-link {
+                margin: 0.25rem 0 !important;
+                text-align: left !important;
+            }
+
+            .dropdown-menu {
+                position: static !important;
+                transform: none !important;
+                box-shadow: none !important;
+                border: 1px solid var(--border-color) !important;
+                margin-top: 0.5rem !important;
+            }
+
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            :root {
+                --navbar-height: 60px;
+            }
+
+            body {
+                padding-top: var(--navbar-height);
+            }
+
+            .navbar {
+                padding: 0.5rem 0;
+                height: var(--navbar-height);
+            }
+
+            .navbar-brand {
+                font-size: 1.4rem !important;
+            }
+
+            .container.body-content {
+                padding: 1.5rem 10px 3rem 10px;
+            }
+
+            footer {
+                padding: 1.5rem 0;
+                margin-top: 3rem;
+            }
+
+            .dropdown-toggle {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.9rem !important;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .navbar-brand span {
+                display: none;
+            }
+
+            .dropdown-toggle span {
+                display: none;
+            }
+
+            .user-avatar {
+                margin-right: 0;
+            }
+        }
+
+        /* Print Styles */
+        @@media print {
+            .navbar,
+            footer,
+            .page-loader {
+                display: none !important;
+            }
+
+            body {
+                padding-top: 0 !important;
+                background: white !important;
+                color: black !important;
+            }
+
+            .container.body-content {
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+        }
+
+        /* Focus Management for Accessibility */
+        .navbar-nav .nav-link:focus,
+        .dropdown-toggle:focus,
+        .dropdown-item:focus {
+            outline: 2px solid rgba(255, 215, 0, 0.6) !important;
+            outline-offset: 2px !important;
+        }
+
+        /* High Contrast Mode Support */
+        @@media (prefers-contrast: high) {
+            :root {
+                --primary-color: #000000;
+                --secondary-color: #333333;
+                --accent-color: #0066cc;
+                --text-dark: #000000;
+                --border-color: #666666;
+            }
+        }
+
+        /* Reduced Motion Support */
+        @@media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Dark Mode Support (if needed in the future) */
+        @@media (prefers-color-scheme: dark) {
+            :root {
+                --light-bg: #1a1a1a;
+                --card-bg: #2d2d2d;
+                --text-dark: #ffffff;
+                --text-muted: #b0b0b0;
+                --border-color: #404040;
+            }
+        }
+
+        /* Utility Classes */
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        @@keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @@keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Loading State for Interactive Elements */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: spin 1s linear infinite;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            @Html.ActionLink("Westend", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+            @if (Session["Role"] != null && (Session["Role"].ToString() == "Admin"))
+            {
+                @Html.ActionLink("Westend Motors", "Admin", "Dashboard", new { area = "" }, new { @class = "navbar-brand" })
+            }
+            else
+            {
+                @Html.ActionLink("Westend Motors", "Index", "Dashboard", new { area = "" }, new { @class = "navbar-brand" })
+            }
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("About", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Vehicles", "Index", "Vehicles", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Appointments", "Index", "Appointments", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Trade-In", "Index", "TradeInRequests", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Sign-In", "Login", "Users", new { area = "" }, new { @class = "nav-link" })</li>
 
-                    <li><a class="dropdown-item" href="@Url.Action("Logout", "Users")">Logout</a></li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar">
-                                @(Session["FullName"] != null ? Session["FullName"].ToString().Substring(0, 1) : "U")
-                            </div>
-                            <span>@(Session["FullName"] ?? "User")</span>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Vehicles" id="vehiclesLink">
+                            <i class="fas fa-car me-1"></i>Vehicles
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="@Url.Action("Register", "Users")">Sign Up</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="@Url.Action("Logout", "Users")">Logout</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="@Url.Action("About", "Home")">About Us</a></li>
-                        </ul>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Appointments" id="appointmentsLink">
+                            <i class="fas fa-calendar-check me-1"></i>Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/TradeInRequests" id="tradeInLink">
+                            <i class="fas fa-exchange-alt me-1"></i>Trade-In
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- User dropdown menu -->
+                <ul class="navbar-nav ms-auto">
+                    @if (Session["UserId"] != null)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar">
+                                    @(Session["FullName"]?.ToString().Substring(0, 1).ToUpper() ?? "U")
+                                </div>
+                                <span class="d-none d-sm-inline">@(Session["FullName"] ?? "User")</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="/Users/Details/@Session["UserId"]">
+                                        My Profile
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="/Users/Logout">
+                                        Sign Out
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Users/Login">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
     </nav>
+
     <div class="container body-content">
         @RenderBody()
-        <hr />
+
         <footer>
-            <p>&copy; @DateTime.Now.Year - Westend Motors</p>
+            <div class="container">
+                <p>&copy; @DateTime.Now.Year Westend Motors - Premium Automotive Solutions</p>
+            </div>
         </footer>
     </div>
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Hide page loader
+            setTimeout(function () {
+                $('#pageLoader').addClass('hidden');
+            }, 500);
+
+            // Add active class to current page navigation
+            const currentPath = window.location.pathname.toLowerCase();
+            $('.navbar-nav .nav-link').removeClass('active');
+
+            if (currentPath.includes('/vehicles')) {
+                $('#vehiclesLink').addClass('active');
+            } else if (currentPath.includes('/appointments')) {
+                $('#appointmentsLink').addClass('active');
+            } else if (currentPath.includes('/tradeinrequests')) {
+                $('#tradeInLink').addClass('active');
+            }
+
+            // Navbar scroll effect
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 50) {
+                    $('.navbar').addClass('scrolled');
+                } else {
+                    $('.navbar').removeClass('scrolled');
+                }
+            });
+
+            // Dropdown functionality debugging
+            console.log('Layout loaded - dropdown should be working');
+
+            $('#userDropdown').on('click', function (e) {
+                console.log('User dropdown clicked');
+            });
+
+            $('#userDropdown').on('show.bs.dropdown', function () {
+                console.log('Dropdown is about to show');
+            });
+
+            $('#userDropdown').on('shown.bs.dropdown', function () {
+                console.log('Dropdown is now visible');
+            });
+
+            // Enhanced mobile menu behavior
+            $('.navbar-toggler').on('click', function () {
+                const isExpanded = $(this).attr('aria-expanded') === 'true';
+                $(this).attr('aria-expanded', !isExpanded);
+            });
+
+            // Close mobile menu when clicking outside
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.navbar').length) {
+                    $('.navbar-collapse').removeClass('show');
+                    $('.navbar-toggler').attr('aria-expanded', 'false');
+                }
+            });
+
+            // Smooth scroll for anchor links
+            $('a[href^="#"]').on('click', function (e) {
+                e.preventDefault();
+                const target = $(this.hash);
+                if (target.length) {
+                    $('html, body').animate({
+                        scrollTop: target.offset().top - 80
+                    }, 600);
+                }
+            });
+
+            // Add loading state to buttons on form submission
+            $('form').on('submit', function () {
+                $(this).find('button[type="submit"], input[type="submit"]').addClass('btn-loading');
+            });
+
+            // AJAX form handling with loading states
+            $(document).ajaxStart(function () {
+                $('body').addClass('loading');
+            }).ajaxStop(function () {
+                $('body').removeClass('loading');
+                $('.btn-loading').removeClass('btn-loading');
+            });
+
+            // Keyboard navigation improvements
+            $('.dropdown-item').on('keydown', function (e) {
+                const items = $('.dropdown-item');
+                const currentIndex = items.index(this);
+
+                switch (e.which) {
+                    case 38: // Up arrow
+                        e.preventDefault();
+                        items.eq(currentIndex - 1).focus();
+                        break;
+                    case 40: // Down arrow
+                        e.preventDefault();
+                        items.eq(currentIndex + 1).focus();
+                        break;
+                    case 27: // Escape
+                        $('#userDropdown').dropdown('hide');
+                        $('#userDropdown').focus();
+                        break;
+                }
+            });
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function () {
+                $('.alert').fadeOut();
+            }, 5000);
+
+            // Page transition effects
+            $('a[href]:not([href^="#"]):not([target="_blank"])').on('click', function (e) {
+                const href = $(this).attr('href');
+                if (href && !href.startsWith('javascript:') && !$(this).hasClass('no-transition')) {
+                    e.preventDefault();
+                    $('body').addClass('page-transitioning');
+                    setTimeout(function () {
+                        window.location.href = href;
+                    }, 200);
+                }
+            });
+        });
+
+        // Handle browser back/forward navigation
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                $('#pageLoader').addClass('hidden');
+                $('body').removeClass('page-transitioning loading');
+                $('.btn-loading').removeClass('btn-loading');
+            }
+        });
+
+        // Performance optimization: Preload critical pages
+        const criticalPages = ['/Vehicles', '/Appointments', '/TradeInRequests'];
+        criticalPages.forEach(function (page) {
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = page;
+            document.head.appendChild(link);
+        });
+    </script>
 </body>
 </html>

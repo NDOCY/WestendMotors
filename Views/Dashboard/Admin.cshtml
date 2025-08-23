@@ -1,57 +1,622 @@
 ﻿@model WestendMotors.Models.AdminDashboardViewModel
 @{
     ViewBag.Title = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container mt-4">
-    <h2>Admin Dashboard</h2>
-
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-center p-3 bg-light">
-                <h4>Available Vehicles</h4>
-                <p class="display-6">@Model.AvailableVehicleCount</p>
-                <a href="@Url.Action("Index", "Vehicles")" class="btn btn-primary">Manage</a>
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="dashboard-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-tachometer-alt"></i>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center p-3 bg-light">
-                <h4>Sold Vehicles</h4>
-                <p class="display-6">@Model.SoldVehicleCount</p>
-                <a href="@Url.Action("Sold", "Vehicles")" class="btn btn-primary">View</a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center p-3 bg-light">
-                <h4>Appointments</h4>
-                <p class="display-6">@Model.AppointmentCount</p>
-                <a href="@Url.Action("Index", "Appointments")" class="btn btn-primary">Manage</a>
+            <div>
+                <h2 class="mb-1">Admin Dashboard</h2>
+                <p class="text-muted mb-0">Welcome back! Here's what's happening at Westend Motors today.</p>
             </div>
         </div>
     </div>
 
-    <h3>Upcoming Appointments</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Vehicle</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var appt in Model.UpcomingAppointments)
-            {
-                <tr>
-                    <td>@appt.Customer.FullName</td>
-                    <td>@appt.AppointmentDate.ToString("g")</td>
-                    <td>@appt.Vehicle?.Title</td>
-                    <td>
-                        <a href="@Url.Action("Details", "Appointments", new { id = appt.AppointmentId })" class="btn btn-sm btn-info">View</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <!-- Summary Cards Row -->
+    <div class="row mb-4">
+        <!-- Available Vehicles -->
+        <div class="col-xl-2 col-md-4 mb-4">
+            <div class="metric-card available-vehicles">
+                <div class="metric-card-body">
+                    <div class="metric-icon">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-label">Available Vehicles</div>
+                        <div class="metric-value">@Model.AvailableVehicleCount</div>
+                    </div>
+                    <a href="@Url.Action("Index", "Vehicles")" class="metric-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sold Vehicles -->
+        <div class="col-xl-2 col-md-4 mb-4">
+            <div class="metric-card sold-vehicles">
+                <div class="metric-card-body">
+                    <div class="metric-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-label">Sold Vehicles</div>
+                        <div class="metric-value">@Model.SoldVehicleCount</div>
+                    </div>
+                    <a href="@Url.Action("Sold", "Vehicles")" class="metric-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments -->
+        <div class="col-xl-2 col-md-4 mb-4">
+            <div class="metric-card appointments">
+                <div class="metric-card-body">
+                    <div class="metric-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-label">Appointments</div>
+                        <div class="metric-value">@Model.AppointmentCount</div>
+                    </div>
+                    <a href="@Url.Action("Index", "Appointments")" class="metric-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade-In Requests -->
+        <div class="col-xl-2 col-md-4 mb-4">
+            <div class="metric-card trade-ins">
+                <div class="metric-card-body">
+                    <div class="metric-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-label">Trade-In Requests</div>
+                        <div class="metric-value">@Model.TradeInRequestCount</div>
+                    </div>
+                    <a href="@Url.Action("Index", "TradeInRequests")" class="metric-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Records -->
+        <div class="col-xl-2 col-md-4 mb-4">
+            <div class="metric-card service-records">
+                <div class="metric-card-body">
+                    <div class="metric-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-label">Service Records</div>
+                        <div class="metric-value">@Model.ServiceRecordCount</div>
+                    </div>
+                    <a href="@Url.Action("Index", "ServiceRecords")" class="metric-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users -->
+        <div class="col-xl-2 col-md-4 mb-4">
+            <div class="metric-card users">
+                <div class="metric-card-body">
+                    <div class="metric-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-label">Users</div>
+                        <div class="metric-value">@Model.UserCount</div>
+                    </div>
+                    <a href="@Url.Action("Index", "Users")" class="metric-link"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Upcoming Appointments -->
+        <div class="col-lg-6 mb-4">
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h6 class="card-title">
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        Upcoming Appointments
+                    </h6>
+                    <a href="@Url.Action("Index", "Appointments")" class="btn btn-outline-primary btn-sm">View All</a>
+                </div>
+                <div class="data-card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Vehicle</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var appt in Model.UpcomingAppointments)
+                                {
+                                    <tr>
+                                        <td class="font-medium">@appt.Customer.FullName</td>
+                                        <td>@appt.AppointmentDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                        <td>@appt.Vehicle?.Title</td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "Appointments", new { id = appt.AppointmentId })"
+                                               class="btn-action">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Trade-In Requests -->
+        <div class="col-lg-6 mb-4">
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h6 class="card-title">
+                        <i class="fas fa-car-side mr-2"></i>
+                        Recent Trade-In Requests
+                    </h6>
+                    <a href="@Url.Action("Index", "TradeInRequests")" class="btn btn-outline-primary btn-sm">View All</a>
+                </div>
+                <div class="data-card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Vehicle</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var tradeIn in Model.RecentTradeIns)
+                                {
+                                    <tr>
+                                        <td class="font-medium">@tradeIn.Customer.FullName</td>
+                                        <td>@tradeIn.Make @tradeIn.Model</td>
+                                        <td>
+                                            <span class="status-badge @(tradeIn.Status == "Pending" ? "status-pending" :
+                                                         tradeIn.Status == "Approved" ? "status-approved" :
+                                                         "status-rejected")">
+                                                @tradeIn.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "TradeInRequests", new { id = tradeIn.TradeInRequestId })"
+                                               class="btn-action">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Content Row -->
+    <div class="row">
+        <!-- Recent Service Records -->
+        <div class="col-lg-6 mb-4">
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h6 class="card-title">
+                        <i class="fas fa-wrench mr-2"></i>
+                        Recent Service Records
+                    </h6>
+                    <a href="@Url.Action("Index", "ServiceRecords")" class="btn btn-outline-primary btn-sm">View All</a>
+                </div>
+                <div class="data-card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Service Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var service in Model.RecentServices)
+                                {
+                                    <tr>
+                                        <td class="font-medium">@service.Vehicle.Title</td>
+                                        <td>@service.ServiceDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "ServiceRecords", new { id = service.ServiceRecordId })"
+                                               class="btn-action">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="col-lg-6 mb-4">
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h6 class="card-title">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Recent Users
+                    </h6>
+                    <a href="@Url.Action("Index", "Users")" class="btn btn-outline-primary btn-sm">View All</a>
+                </div>
+                <div class="data-card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.RecentUsers)
+                                {
+                                    <tr>
+                                        <td class="font-medium">@user.FullName</td>
+                                        <td class="text-muted">@user.Email</td>
+                                        <td>
+                                            <span class="role-badge @(user.Role == "Admin" ? "role-admin" :
+                                                         user.Role == "Sales" ? "role-sales" :
+                                                         "role-customer")">
+                                                @user.Role
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "Users", new { id = user.UserId })"
+                                               class="btn-action">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #ecf0f1;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #ddd;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Header Styling */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+        }
+
+        .header-icon i {
+            font-size: 1.5rem;
+        }
+
+        /* Metric Cards */
+        .metric-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .metric-card-body {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .metric-content {
+            flex: 1;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .metric-link {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        /* Color themes for metric cards */
+        .available-vehicles .metric-icon { background: var(--accent-color); }
+        .sold-vehicles .metric-icon { background: var(--success-color); }
+        .appointments .metric-icon { background: var(--warning-color); }
+        .trade-ins .metric-icon { background: #9b59b6; }
+        .service-records .metric-icon { background: var(--danger-color); }
+        .users .metric-icon { background: var(--secondary-color); }
+
+        /* Data Cards */
+        .data-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .data-card-header {
+            background: #f8f9fa;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .data-card-body {
+            padding: 0;
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            margin: 0;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-bottom: 1px solid #f1f1f1;
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .font-medium {
+            font-weight: 600;
+        }
+
+        /* Status and Role Badges */
+        .status-badge, .role-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .role-admin {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .role-sales {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .role-customer {
+            background: #d1f2eb;
+            color: #00695c;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            background: #2980b9;
+            color: white;
+            text-decoration: none;
+            transform: scale(1.1);
+        }
+
+        /* Button Improvements */
+        .btn-outline-primary {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Responsive Improvements */
+        @@media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .metric-card-body {
+                padding: 1.25rem;
+            }
+
+            .data-card-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .data-table {
+                font-size: 0.875rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        /* Animation for page load */
+        .metric-card, .data-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+}

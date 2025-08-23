@@ -2,152 +2,719 @@
 
 @{
     ViewBag.Title = Model.Title;
+    var role = Session["Role"] as string;
+
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
 }
 
 <div class="container mt-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <div class="header-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div>
+                    <h1 class="mb-1">@Model.Title</h1>
+                    <p class="text-muted mb-0">Vehicle Details & Specifications</p>
+                </div>
+            </div>
+            <div class="price-badge">
+                <span class="price-label">Price</span>
+                <span class="price-value">@Model.Price.ToString("C")</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
     <div class="row">
         <!-- Left: Interactive Images -->
-        <div class="col-md-6">
-            @if (Model.Images != null && Model.Images.Any())
-            {
-                <!-- Main Image -->
-                <img id="mainImage" src="@Url.Content(Model.Images.First().ImagePath)"
-                     class="img-fluid rounded mb-3" alt="@Model.Title" style="max-height: 400px; object-fit: cover;" />
+        <div class="col-lg-8">
+            <div class="image-section">
+                @if (Model.Images != null && Model.Images.Any())
+                {
+                    <!-- Main Image -->
+                    <div class="main-image-container">
+                        <img id="mainImage" src="@Url.Content(Model.Images.First().ImagePath)"
+                             class="main-image" alt="@Model.Title" />
+                        <div class="image-overlay">
+                            <button class="btn btn-light btn-sm" onclick="openImageModal()">
+                                <i class="fas fa-expand"></i> View Fullscreen
+                            </button>
+                        </div>
+                    </div>
 
-                <!-- Thumbnails -->
-                <div class="d-flex flex-wrap gap-2">
-                    @foreach (var img in Model.Images)
-                    {
-                        <img src="@Url.Content(img.ImagePath)"
-                             style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
-                             class="img-thumbnail thumb-img" />
-                    }
+                    <!-- Thumbnails -->
+                    <div class="thumbnails-container">
+                        @foreach (var img in Model.Images)
+                        {
+                            <img src="@Url.Content(img.ImagePath)"
+                                 class="thumbnail-image" />
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="no-image-container">
+                        <i class="fas fa-image"></i>
+                        <p>No images available</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Description Section -->
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="description-section">
+                    <h4><i class="fas fa-info-circle me-2"></i>Description</h4>
+                    <p>@Model.Description</p>
                 </div>
             }
-            else
+
+            <!-- Features Section -->
+            @if (!string.IsNullOrEmpty(Model.Specs?.FeatureList))
             {
-                <p><em>No images available</em></p>
+                <div class="features-section">
+                    <h4><i class="fas fa-star me-2"></i>Features</h4>
+                    <div class="features-grid">
+                        @foreach (var feature in Model.Specs.FeatureList.Split(','))
+                        {
+                            <div class="feature-item">
+                                <i class="fas fa-check"></i>
+                                <span>@feature.Trim()</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Condition Notes -->
+            @if (!string.IsNullOrEmpty(Model.Specs?.ConditionNotes))
+            {
+                <div class="condition-section">
+                    <h4><i class="fas fa-clipboard-check me-2"></i>Condition Notes</h4>
+                    <div class="condition-card">
+                        <p>@Model.Specs.ConditionNotes</p>
+                    </div>
+                </div>
             }
         </div>
 
-        <!-- Right: Specs & Price -->
-        <div class="col-md-6">
-            <h2>@Model.Title</h2>
-            <h4 class="text-primary">Price: @Model.Price.ToString("C")</h4>
-            <p>@Model.Description</p>
-
+        <!-- Right: Specs & Actions -->
+        <div class="col-lg-4">
+            <!-- Vehicle Specifications -->
             @if (Model.Specs != null)
             {
-                <table class="table table-striped">
-                    <tbody>
-                        <tr><th>Make</th><td>@Model.Specs.Make</td></tr>
-                        <tr><th>Model</th><td>@Model.Specs.Model</td></tr>
-                        <tr><th>Year</th><td>@Model.Specs.Year</td></tr>
-                        <tr><th>Mileage</th><td>@Model.Specs.Mileage.ToString("N0") km</td></tr>
-                        <tr><th>Fuel Type</th><td>@Model.Specs.FuelType</td></tr>
-                        <tr><th>Transmission</th><td>@Model.Specs.Transmission</td></tr>
-                        <tr><th>Color</th><td>@Model.Specs.Color</td></tr>
-                        <tr><th>Engine Size</th><td>@Model.Specs.EngineSize</td></tr>
-                        <tr><th>Seats</th><td>@Model.Specs.NumberOfSeats</td></tr>
-                        <tr><th>Body Type</th><td>@Model.Specs.BodyType</td></tr>
-                    </tbody>
-                </table>
+                <div class="specs-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cogs me-2"></i>Specifications</h5>
+                    </div>
+                    <div class="specs-list">
+                        <div class="spec-item">
+                            <span class="spec-label">Make</span>
+                            <span class="spec-value">@Model.Specs.Make</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Model</span>
+                            <span class="spec-value">@Model.Specs.Model</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Year</span>
+                            <span class="spec-value">@Model.Specs.Year</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Mileage</span>
+                            <span class="spec-value">@Model.Specs.Mileage.ToString("N0") km</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Fuel Type</span>
+                            <span class="spec-value">@Model.Specs.FuelType</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Transmission</span>
+                            <span class="spec-value">@Model.Specs.Transmission</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Color</span>
+                            <span class="spec-value">@Model.Specs.Color</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Engine Size</span>
+                            <span class="spec-value">@Model.Specs.EngineSize</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Seats</span>
+                            <span class="spec-value">@Model.Specs.NumberOfSeats</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Body Type</span>
+                            <span class="spec-value">@Model.Specs.BodyType</span>
+                        </div>
+                    </div>
+                </div>
             }
+
+            <!-- Finance Calculator -->
+            <div class="finance-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calculator me-2"></i>Finance Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <form id="financeForm">
+                        <div class="form-group">
+                            <label class="form-label">Vehicle Price</label>
+                            <input type="number" class="form-control" id="vehiclePrice" value="@Model.Price" readonly />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Deposit</label>
+                            <input type="number" class="form-control" id="deposit" value="0" placeholder="Enter deposit amount" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Interest Rate (%)</label>
+                            <input type="number" class="form-control" id="interestRate" value="10" step="0.01" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Loan Term (Months)</label>
+                            <select class="form-control" id="loanTerm">
+                                <option value="36">36 Months</option>
+                                <option value="48">48 Months</option>
+                                <option value="60" selected>60 Months</option>
+                                <option value="72">72 Months</option>
+                            </select>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100" onclick="calculateFinance()">
+                            <i class="fas fa-calculator me-2"></i>Calculate Payment
+                        </button>
+
+                        <div class="payment-result">
+                            <div class="payment-label">Estimated Monthly Payment:</div>
+                            <div id="monthlyPayment" class="payment-amount">R 0.00</div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                @Html.ActionLink("Book Test Drive", "Create", "Appointments", new { vehicleId = Model.Id, vehicleTitle = Model.Title }, new { @class = "btn btn-success btn-lg" })
+                <a href="@Url.Action("Create", "TradeInRequests", new { vehicleId = Model.Id })" class="btn btn-warning btn-lg">
+                    <i class="fas fa-exchange-alt me-2"></i>Request Trade-In
+                </a>
+            </div>
         </div>
     </div>
-
-    <hr />
-
-    <!-- Condition Notes & Features -->
-    @if (!string.IsNullOrEmpty(Model.Specs?.ConditionNotes))
-    {
-        <h4>Condition</h4>
-        <p>@Model.Specs.ConditionNotes</p>
-    }
-
-    @if (!string.IsNullOrEmpty(Model.Specs?.FeatureList))
-    {
-        <h4>Features</h4>
-        <ul>
-            @foreach (var feature in Model.Specs.FeatureList.Split(','))
-            {
-                <li>@feature.Trim()</li>
-            }
-        </ul>
-    }
-
-    <hr />
-
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            Finance Calculator
-        </div>
-        <div class="card-body">
-            <form id="financeForm">
-                <div class="form-group mb-2">
-                    <label>Vehicle Price</label>
-                    <input type="number" class="form-control" id="vehiclePrice" value="@Model.Price" readonly />
-                </div>
-
-                <div class="form-group mb-2">
-                    <label>Deposit</label>
-                    <input type="number" class="form-control" id="deposit" value="0" />
-                </div>
-
-                <div class="form-group mb-2">
-                    <label>Interest Rate (%)</label>
-                    <input type="number" class="form-control" id="interestRate" value="10" step="0.01" />
-                </div>
-
-                <div class="form-group mb-2">
-                    <label>Loan Term (Months)</label>
-                    <input type="number" class="form-control" id="loanTerm" value="60" />
-                </div>
-
-                <button type="button" class="btn btn-success mt-2" onclick="calculateFinance()">Calculate</button>
-
-                <div class="mt-3">
-                    <h6>Estimated Monthly Payment:</h6>
-                    <h4 id="monthlyPayment" class="text-primary">R 0.00</h4>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <hr />
-
-    <!-- Action Buttons -->
-    <div class="d-flex gap-2">
-        @Html.ActionLink("Book Test Drive", "Create", "Appointments", new { vehicleId = Model.Id, vehicleTitle = Model.Title }, new { @class = "btn btn-success btn-lg" })
-        <a href="@Url.Action("Create", "TradeInRequests", new { vehicleId = Model.Id })" class="btn btn-warning">Request Trade-In</a>
-    </div>
-
 </div>
 
 @section Scripts {
     <script>
         // Thumbnail click updates main image
-        document.querySelectorAll(".thumb-img").forEach(img => {
+        document.querySelectorAll(".thumbnail-image").forEach(img => {
             img.addEventListener("click", function () {
                 document.getElementById("mainImage").src = this.src;
+
+                // Remove active class from all thumbnails
+                document.querySelectorAll(".thumbnail-image").forEach(thumb => {
+                    thumb.classList.remove("active");
+                });
+
+                // Add active class to clicked thumbnail
+                this.classList.add("active");
             });
         });
-    </script>
-    <script>
+
+        // Set first thumbnail as active by default
+        document.addEventListener("DOMContentLoaded", function () {
+            const firstThumb = document.querySelector(".thumbnail-image");
+            if (firstThumb) {
+                firstThumb.classList.add("active");
+            }
+
+            // Auto-calculate finance on page load
+            calculateFinance();
+        });
+
         function calculateFinance() {
             let price = parseFloat(document.getElementById("vehiclePrice").value);
-            let deposit = parseFloat(document.getElementById("deposit").value);
+            let deposit = parseFloat(document.getElementById("deposit").value) || 0;
             let rate = parseFloat(document.getElementById("interestRate").value) / 100 / 12; // monthly interest
             let term = parseInt(document.getElementById("loanTerm").value);
 
             let loanAmount = price - deposit;
+
+            if (loanAmount <= 0) {
+                document.getElementById("monthlyPayment").innerText = "R 0.00";
+                return;
+            }
+
             let monthlyPayment = (loanAmount * rate) / (1 - Math.pow(1 + rate, -term));
 
-            if (!isNaN(monthlyPayment)) {
-                document.getElementById("monthlyPayment").innerText = "R " + monthlyPayment.toFixed(2);
+            if (!isNaN(monthlyPayment) && monthlyPayment > 0) {
+                document.getElementById("monthlyPayment").innerText = "R " + monthlyPayment.toLocaleString('en-ZA', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             } else {
                 document.getElementById("monthlyPayment").innerText = "R 0.00";
             }
         }
+
+        // Auto-calculate when inputs change
+        document.getElementById("deposit").addEventListener("input", calculateFinance);
+        document.getElementById("interestRate").addEventListener("input", calculateFinance);
+        document.getElementById("loanTerm").addEventListener("change", calculateFinance);
+
+        function openImageModal() {
+            // Simple fullscreen implementation
+            const mainImage = document.getElementById("mainImage");
+            if (mainImage.requestFullscreen) {
+                mainImage.requestFullscreen();
+            }
+        }
     </script>
+}
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Vehicle Details Theme - Matching Dashboard Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .price-badge {
+            text-align: right;
+            background: rgba(255,255,255,0.15);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .price-label {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.25rem;
+        }
+
+        .price-value {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* Image Section */
+        .image-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .main-image-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .main-image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .thumbnails-container {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .thumbnail-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .thumbnail-image:hover {
+            border-color: var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .thumbnail-image.active {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .no-image-container {
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: var(--text-muted);
+        }
+
+        .no-image-container i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Content Sections */
+        .description-section,
+        .features-section,
+        .condition-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .description-section h4,
+        .features-section h4,
+        .condition-section h4 {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid var(--success-color);
+        }
+
+        .feature-item i {
+            color: var(--success-color);
+            margin-right: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        /* Condition Card */
+        .condition-card {
+            background: #fff8dc;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        /* Sidebar Cards */
+        .specs-card,
+        .finance-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Specifications List */
+        .specs-list {
+            padding: 1.5rem;
+        }
+
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .spec-item:last-child {
+            border-bottom: none;
+        }
+
+        .spec-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .spec-value {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-control[readonly] {
+            background: #f8f9fa;
+            color: var(--text-muted);
+        }
+
+        /* Payment Result */
+        .payment-result {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .payment-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-amount {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-light {
+            background: rgba(255,255,255,0.9);
+            color: var(--text-dark);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-light:hover {
+            background: white;
+            color: var(--text-dark);
+        }
+
+        .w-100 {
+            width: 100%;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+            }
+
+            .page-header .d-flex {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .price-badge {
+                text-align: center;
+            }
+
+            .main-image {
+                height: 250px;
+            }
+
+            .thumbnails-container {
+                justify-content: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .spec-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus,
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+    </style>
 }

@@ -2,165 +2,1008 @@
 
 @{
     ViewBag.Title = "Add New Vehicle";
+    var role = Session["Role"] as string;
+
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
 }
 
-<h2>Add New Vehicle</h2>
-
-@using (Html.BeginForm("Create", "Vehicles", FormMethod.Post, new { enctype = "multipart/form-data" }))
-{
-    @Html.AntiForgeryToken()
-
-    <div class="form-horizontal">
-        <h4>Vehicle Information</h4>
-        <hr />
-
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-        <!-- Vehicle Basic Details -->
-        <div class="form-group">
-            @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-plus-circle"></i>
             </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 4 })
-                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Price, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Price, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <!-- Vehicle Specs -->
-        <h4>Vehicle Specifications</h4>
-        <hr />
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.Make, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.Make, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Specs.Make, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.Model, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.Model, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Specs.Model, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.Year, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.Year, new { htmlAttributes = new { @class = "form-control", type = "number" } })
-                @Html.ValidationMessageFor(model => model.Specs.Year, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.Mileage, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.Mileage, new { htmlAttributes = new { @class = "form-control", type = "number" } })
-                @Html.ValidationMessageFor(model => model.Specs.Mileage, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.FuelType, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.FuelType, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Specs.FuelType, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.Transmission, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.Transmission, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Specs.Transmission, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.Color, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.Color, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Specs.Color, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.EngineSize, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.EngineSize, new { htmlAttributes = new { @class = "form-control", type = "number", step = "0.1" } })
-                @Html.ValidationMessageFor(model => model.Specs.EngineSize, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.NumberOfSeats, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.NumberOfSeats, new { htmlAttributes = new { @class = "form-control", type = "number" } })
-                @Html.ValidationMessageFor(model => model.Specs.NumberOfSeats, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.BodyType, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Specs.BodyType, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Specs.BodyType, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.ConditionNotes, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.TextAreaFor(model => model.Specs.ConditionNotes, new { @class = "form-control", rows = 3 })
-                @Html.ValidationMessageFor(model => model.Specs.ConditionNotes, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Specs.FeatureList, "Features", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.TextAreaFor(model => model.Specs.FeatureList, new { @class = "form-control", rows = 3, placeholder = "Bluetooth, Airbags, Parking Sensors..." })
-                @Html.ValidationMessageFor(model => model.Specs.FeatureList, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <!-- Image Upload -->
-        <h4>Vehicle Images</h4>
-        <hr />
-        <div class="form-group">
-            <label class="control-label col-md-2">Upload Images</label>
-            <div class="col-md-10">
-                <input type="file" name="images" multiple accept="image/*" class="form-control" />
-            </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save Vehicle" class="btn btn-primary" />
-                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default" })
+            <div>
+                <h2 class="mb-1">Add New Vehicle</h2>
+                <p class="text-muted mb-0">Create a comprehensive vehicle listing with specifications and images</p>
             </div>
         </div>
     </div>
-}
+
+    @using (Html.BeginForm("Create", "Vehicles", FormMethod.Post, new { enctype = "multipart/form-data", @class = "vehicle-form" }))
+    {
+        @Html.AntiForgeryToken()
+
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        <div class="form-container">
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h4><i class="fas fa-info-circle me-2"></i>Basic Information</h4>
+                    <div class="section-progress">
+                        <span class="step active">1</span>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Title, "Vehicle Title", new { @class = "form-label required" })
+                        @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control", placeholder = "e.g., 2020 Toyota Corolla 1.8 Prestige" } })
+                        @Html.ValidationMessageFor(model => model.Title, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Price, "Asking Price (ZAR)", new { @class = "form-label required" })
+                        <div class="input-group">
+                            <div class="input-prefix">R</div>
+                            @Html.EditorFor(model => model.Price, new { htmlAttributes = new { @class = "form-control price-input", type = "number", step = "1000", placeholder = "250000" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Price, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group full-width">
+                        @Html.LabelFor(model => model.Description, "Vehicle Description", new { @class = "form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 4, placeholder = "Describe the vehicle's condition, history, and key selling points..." })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "error-message" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Specifications Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h4><i class="fas fa-cogs me-2"></i>Technical Specifications</h4>
+                    <div class="section-progress">
+                        <span class="step">2</span>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.Make, "Make", new { @class = "form-label required" })
+                        <select name="Specs.Make" class="form-control select-enhanced" required>
+                            <option value="">Select Make</option>
+                            <option value="Audi">Audi</option>
+                            <option value="BMW">BMW</option>
+                            <option value="Chevrolet">Chevrolet</option>
+                            <option value="Ford">Ford</option>
+                            <option value="Honda">Honda</option>
+                            <option value="Hyundai">Hyundai</option>
+                            <option value="Kia">Kia</option>
+                            <option value="Mazda">Mazda</option>
+                            <option value="Mercedes-Benz">Mercedes-Benz</option>
+                            <option value="Nissan">Nissan</option>
+                            <option value="Renault">Renault</option>
+                            <option value="Suzuki">Suzuki</option>
+                            <option value="Toyota">Toyota</option>
+                            <option value="Volkswagen">Volkswagen</option>
+                            <option value="Volvo">Volvo</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.Make, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.Model, "Model", new { @class = "form-label required" })
+                        @Html.EditorFor(model => model.Specs.Model, new { htmlAttributes = new { @class = "form-control", placeholder = "e.g., Corolla" } })
+                        @Html.ValidationMessageFor(model => model.Specs.Model, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.Year, "Year", new { @class = "form-label required" })
+                        <select name="Specs.Year" class="form-control select-enhanced" required>
+                            <option value="">Select Year</option>
+                            @for (int year = DateTime.Now.Year + 1; year >= 1990; year--)
+                            {
+                                <option value="@year">@year</option>
+                            }
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.Year, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.Mileage, "Mileage (km)", new { @class = "form-label required" })
+                        <div class="input-group">
+                            @Html.EditorFor(model => model.Specs.Mileage, new { htmlAttributes = new { @class = "form-control", type = "number", placeholder = "120000" } })
+                            <div class="input-suffix">km</div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Specs.Mileage, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.FuelType, "Fuel Type", new { @class = "form-label required" })
+                        <select name="Specs.FuelType" class="form-control select-enhanced" required>
+                            <option value="">Select Fuel Type</option>
+                            <option value="Petrol">Petrol</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Electric">Electric</option>
+                            <option value="LPG">LPG</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.FuelType, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.Transmission, "Transmission", new { @class = "form-label required" })
+                        <select name="Specs.Transmission" class="form-control select-enhanced" required>
+                            <option value="">Select Transmission</option>
+                            <option value="Manual">Manual</option>
+                            <option value="Automatic">Automatic</option>
+                            <option value="Semi-Automatic">Semi-Automatic</option>
+                            <option value="CVT">CVT (Continuously Variable)</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.Transmission, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.Color, "Exterior Color", new { @class = "form-label required" })
+                        <select name="Specs.Color" class="form-control select-enhanced color-select" required>
+                            <option value="">Select Color</option>
+                            <option value="White" data-color="#FFFFFF">White</option>
+                            <option value="Black" data-color="#000000">Black</option>
+                            <option value="Silver" data-color="#C0C0C0">Silver</option>
+                            <option value="Grey" data-color="#808080">Grey</option>
+                            <option value="Blue" data-color="#0066CC">Blue</option>
+                            <option value="Red" data-color="#CC0000">Red</option>
+                            <option value="Green" data-color="#006600">Green</option>
+                            <option value="Yellow" data-color="#FFCC00">Yellow</option>
+                            <option value="Orange" data-color="#FF6600">Orange</option>
+                            <option value="Brown" data-color="#8B4513">Brown</option>
+                            <option value="Gold" data-color="#FFD700">Gold</option>
+                            <option value="Purple" data-color="#800080">Purple</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.Color, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.EngineSize, "Engine Size (L)", new { @class = "form-label" })
+                        <select name="Specs.EngineSize" class="form-control select-enhanced">
+                            <option value="">Select Engine Size</option>
+                            <option value="1.0">1.0L</option>
+                            <option value="1.2">1.2L</option>
+                            <option value="1.4">1.4L</option>
+                            <option value="1.6">1.6L</option>
+                            <option value="1.8">1.8L</option>
+                            <option value="2.0">2.0L</option>
+                            <option value="2.2">2.2L</option>
+                            <option value="2.4">2.4L</option>
+                            <option value="2.5">2.5L</option>
+                            <option value="3.0">3.0L</option>
+                            <option value="3.5">3.5L</option>
+                            <option value="4.0">4.0L</option>
+                            <option value="5.0">5.0L+</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.EngineSize, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.NumberOfSeats, "Number of Seats", new { @class = "form-label required" })
+                        <select name="Specs.NumberOfSeats" class="form-control select-enhanced" required>
+                            <option value="">Select Seats</option>
+                            <option value="2">2 Seater</option>
+                            <option value="4">4 Seater</option>
+                            <option value="5">5 Seater</option>
+                            <option value="7">7 Seater</option>
+                            <option value="8">8 Seater</option>
+                            <option value="9">9+ Seater</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.NumberOfSeats, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Specs.BodyType, "Body Type", new { @class = "form-label required" })
+                        <select name="Specs.BodyType" class="form-control select-enhanced" required>
+                            <option value="">Select Body Type</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Hatchback">Hatchback</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Crossover">Crossover</option>
+                            <option value="Coupe">Coupe</option>
+                            <option value="Convertible">Convertible</option>
+                            <option value="Station Wagon">Station Wagon</option>
+                            <option value="Pickup Truck">Pickup Truck</option>
+                            <option value="Van">Van</option>
+                            <option value="Minibus">Minibus</option>
+                            <option value="Sports Car">Sports Car</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.Specs.BodyType, "", new { @class = "error-message" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Details Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h4><i class="fas fa-clipboard-list me-2"></i>Additional Details</h4>
+                    <div class="section-progress">
+                        <span class="step">3</span>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        @Html.LabelFor(model => model.Specs.ConditionNotes, "Condition Notes", new { @class = "form-label" })
+                        @Html.TextAreaFor(model => model.Specs.ConditionNotes, new { @class = "form-control", rows = 3, placeholder = "Detail any wear, damage, recent repairs, or maintenance..." })
+                        @Html.ValidationMessageFor(model => model.Specs.ConditionNotes, "", new { @class = "error-message" })
+                    </div>
+
+                    <div class="form-group full-width">
+                        @Html.LabelFor(model => model.Specs.FeatureList, "Vehicle Features", new { @class = "form-label" })
+                        <div class="features-input">
+                            @Html.TextAreaFor(model => model.Specs.FeatureList, new { @class = "form-control", rows = 4, placeholder = "List key features separated by commas..." })
+                            <div class="feature-suggestions">
+                                <div class="suggestion-group">
+                                    <span class="suggestion-title">Popular Features:</span>
+                                    <button type="button" class="feature-tag" data-feature="Air Conditioning">Air Conditioning</button>
+                                    <button type="button" class="feature-tag" data-feature="Bluetooth Connectivity">Bluetooth</button>
+                                    <button type="button" class="feature-tag" data-feature="Cruise Control">Cruise Control</button>
+                                    <button type="button" class="feature-tag" data-feature="Power Steering">Power Steering</button>
+                                    <button type="button" class="feature-tag" data-feature="Electric Windows">Electric Windows</button>
+                                    <button type="button" class="feature-tag" data-feature="ABS Brakes">ABS Brakes</button>
+                                    <button type="button" class="feature-tag" data-feature="Airbags">Airbags</button>
+                                    <button type="button" class="feature-tag" data-feature="Alarm System">Alarm System</button>
+                                    <button type="button" class="feature-tag" data-feature="Alloy Wheels">Alloy Wheels</button>
+                                    <button type="button" class="feature-tag" data-feature="GPS Navigation">GPS Navigation</button>
+                                </div>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Specs.FeatureList, "", new { @class = "error-message" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h4><i class="fas fa-images me-2"></i>Vehicle Images</h4>
+                    <div class="section-progress">
+                        <span class="step">4</span>
+                    </div>
+                </div>
+
+                <div class="image-upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h5>Upload Vehicle Images</h5>
+                            <p>Drag and drop images here, or click to browse</p>
+                            <input type="file" name="imageFiles" id="imageFiles" multiple accept="image/*" class="file-input" />
+                            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('imageFiles').click()">
+                                <i class="fas fa-folder-open me-2"></i>Choose Files
+                            </button>
+                        </div>
+                    </div>
+                    <div class="upload-tips">
+                        <div class="tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Include exterior, interior, engine bay, and any damage photos</span>
+                        </div>
+                        <div class="tip">
+                            <i class="fas fa-info-circle"></i>
+                            <span>High-quality images increase buyer interest by up to 40%</span>
+                        </div>
+                    </div>
+                    <div class="image-preview" id="imagePreview"></div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus-circle me-2"></i>Add Vehicle to Inventory
+                </button>
+                @Html.ActionLink("Cancel", "Index", null, new { @class = "btn btn-outline-secondary btn-lg" })
+            </div>
+        </div>
+    }
+</div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function() {
+            // Enhanced select styling
+            $('.select-enhanced').each(function() {
+                $(this).addClass('custom-select');
+            });
+
+            // Feature tag functionality
+            $('.feature-tag').on('click', function(e) {
+                e.preventDefault();
+                const feature = $(this).data('feature');
+                const textarea = $('#Specs_FeatureList');
+                const currentValue = textarea.val();
+
+                if (currentValue.includes(feature)) {
+                    return; // Feature already exists
+                }
+
+                const newValue = currentValue ? currentValue + ', ' + feature : feature;
+                textarea.val(newValue);
+                $(this).addClass('added');
+
+                setTimeout(() => {
+                    $(this).removeClass('added');
+                }, 2000);
+            });
+
+            // Image upload preview
+            $('#imageFiles').on('change', function(e) {
+                const files = e.target.files;
+                const preview = $('#imagePreview');
+                preview.empty();
+
+                if (files.length > 0) {
+                    preview.append('<h6>Selected Images:</h6>');
+                    const grid = $('<div class="preview-grid"></div>');
+
+                    Array.from(files).forEach(file => {
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const item = $('<div class="preview-item">' +
+                                    '<img src="' + e.target.result + '" alt="Preview">' +
+                                    '<span class="file-name">' + file.name + '</span>' +
+                                '</div>');
+                                grid.append(item);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+
+                    preview.append(grid);
+                }
+            });
+
+            // Drag and drop functionality
+            const uploadArea = $('#uploadArea');
+
+            uploadArea.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('drag-over');
+            });
+
+            uploadArea.on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('drag-over');
+            });
+
+            uploadArea.on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('drag-over');
+
+                const files = e.originalEvent.dataTransfer.files;
+                document.getElementById('imageFiles').files = files;
+                $('#imageFiles').trigger('change');
+            });
+
+            // Price formatting
+            $('.price-input').on('input', function() {
+                let value = $(this).val().replace(/\D/g, '');
+                if (value) {
+                    $(this).val(parseInt(value).toLocaleString());
+                }
+            });
+
+            // Form validation enhancement
+            $('form').on('submit', function(e) {
+                const requiredFields = $('.required').parent().find('input, select, textarea');
+                let hasErrors = false;
+
+                requiredFields.each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('error');
+                        hasErrors = true;
+                    } else {
+                        $(this).removeClass('error');
+                    }
+                });
+
+                if (hasErrors) {
+                    e.preventDefault();
+                    $('html, body').animate({
+                        scrollTop: $('.error').first().offset().top - 100
+                    }, 500);
+                }
+            });
+
+            // Progress tracking
+            function updateProgress() {
+                const sections = $('.form-section');
+                sections.each(function(index) {
+                    const requiredFields = $(this).find('input[required], select[required]');
+                    const filledFields = requiredFields.filter(function() {
+                        return $(this).val() !== '';
+                    });
+
+                    const step = $(this).find('.step');
+                    if (filledFields.length === requiredFields.length && requiredFields.length > 0) {
+                        step.addClass('completed');
+                    } else {
+                        step.removeClass('completed');
+                    }
+                });
+            }
+
+            $('input, select, textarea').on('change', updateProgress);
+        });
+    </script>
+}
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Vehicle Form Theme - Matching Dashboard Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* Form Container */
+        .form-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Form Sections */
+        .form-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h4 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-progress .step {
+            background: var(--border-color);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .section-progress .step.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .section-progress .step.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .section-progress .step.completed::before {
+            content: '✓';
+        }
+
+        /* Form Grid */
+        .form-grid {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+            display: block;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger-color);
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-control.error {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        /* Input Groups */
+        .input-group {
+            position: relative;
+            display: flex;
+        }
+
+        .input-prefix,
+        .input-suffix {
+            background: #f8f9fa;
+            border: 2px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-prefix {
+            border-radius: 8px 0 0 8px;
+            border-right: none;
+        }
+
+        .input-suffix {
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .input-prefix + .form-control {
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+        }
+
+        .form-control + .input-suffix {
+            border-left: none;
+        }
+
+        /* Enhanced Selects */
+        .select-enhanced {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
+            appearance: none;
+        }
+
+        /* Feature Input */
+        .features-input {
+            position: relative;
+        }
+
+        .feature-suggestions {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-tag {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 0.25rem 0.25rem 0.25rem 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .feature-tag:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .feature-tag.added {
+            background: var(--success-color);
+            animation: pulse 0.5s ease;
+        }
+
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Image Upload */
+        .image-upload-container {
+            padding: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--accent-color);
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .upload-content i {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .upload-content h5 {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-content p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-tips {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .tip {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: #e8f4fd;
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .tip i {
+            color: var(--accent-color);
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+
+        /* Image Preview */
+        .image-preview {
+            margin-top: 1.5rem;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .preview-item {
+            background: white;
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            word-break: break-word;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        /* Buttons */
+        .btn {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            background: transparent;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Error Messages */
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        /* Color Select Enhancement */
+        .color-select option[data-color] {
+            padding-left: 2rem;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .page-header .d-flex {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+
+            .section-header {
+                padding: 1.25rem 1.5rem;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .upload-area {
+                padding: 2rem 1rem;
+            }
+
+            .upload-tips {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                padding: 1.5rem;
+            }
+
+            .preview-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus,
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Loading states */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            margin-left: 0.5rem;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Form validation visual feedback */
+        .form-control:valid:not(:placeholder-shown) {
+            border-color: var(--success-color);
+        }
+
+        .form-control:invalid:not(:placeholder-shown) {
+            border-color: var(--danger-color);
+        }
+
+        /* Improved typography */
+        .form-section h4 {
+            font-size: 1.1rem;
+        }
+
+        .page-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        /* Enhanced visual hierarchy */
+        .section-header {
+            position: relative;
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-color);
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
 }

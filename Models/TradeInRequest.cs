@@ -20,24 +20,38 @@ namespace WestendMotors.Models
         [Required] public string Model { get; set; }
         [Required] public int Year { get; set; }
         [Required] public int Mileage { get; set; }
-        public string FuelType { get; set; }
+        public string FuelType { get; set; }    
         public string Transmission { get; set; }
         public string Color { get; set; }
         public double EngineSize { get; set; }
         public int NumberOfSeats { get; set; }
         public string BodyType { get; set; }
         public string ConditionNotes { get; set; }
-        public decimal EstimatedValue { get; set; }
+        public decimal? EstimatedValue { get; set; }
 
-        public string Status { get; set; } = "Pending"; // Pending, Accepted, Declined, Cancelled, Postponed
-        public DateTime? NewAppointmentDate { get; set; }
+        // ADMIN REVIEW PROPERTIES (ADD THESE)
+        public string Status { get; set; } = "Pending"; // Pending, Under Review, Approved, Declined, Scheduled
+
+        [Display(Name = "Admin Notes")]
+        [DataType(DataType.MultilineText)]
         public string AdminNotes { get; set; }
 
+        [Display(Name = "Final Offer Amount")]
+        [DataType(DataType.Currency)]
+        public decimal? FinalOffer { get; set; }
 
+        [Display(Name = "Admin Review Date")]
+        public DateTime? AdminReviewDate { get; set; }
+
+        [Display(Name = "Scheduled Appointment")]
+        public DateTime? ScheduledAppointment { get; set; }
+
+        [Display(Name = "Request Date")]
         public DateTime RequestDate { get; set; } = DateTime.Now;
 
-        // Uploaded images for customer's vehicle
+        // Navigation properties
         public virtual ICollection<TradeInImage> Images { get; set; } = new List<TradeInImage>();
+        public virtual ICollection<TradeInAppointment> Appointments { get; set; } = new List<TradeInAppointment>();
     }
 
     public class TradeInImage
@@ -47,4 +61,32 @@ namespace WestendMotors.Models
         public string ImagePath { get; set; }
         public virtual TradeInRequest TradeInRequest { get; set; }
     }
+
+    // ADD THIS NEW CLASS FOR APPOINTMENTS
+    public class TradeInAppointment
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public int TradeInRequestId { get; set; }
+
+        [Required]
+        [Display(Name = "Appointment Date")]
+        public DateTime AppointmentDate { get; set; }
+
+        [Display(Name = "Notes")]
+        [StringLength(500)]
+        public string Notes { get; set; }
+
+        [Display(Name = "Status")]
+        public string Status { get; set; } = "Scheduled"; // Scheduled, Completed, Cancelled, No-Show
+
+        [Display(Name = "Created Date")]
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        // Navigation property
+        public virtual TradeInRequest TradeInRequest { get; set; }
+    }
+
+         
 }

@@ -2,6 +2,16 @@
 
 @{
     ViewBag.Title = "Details";
+    var role = Session["Role"] as string;
+
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
 }
 
 <h2>Details</h2>

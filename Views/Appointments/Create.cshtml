@@ -1,29 +1,283 @@
 ﻿@model WestendMotors.Models.Appointment
-
 @{
-    ViewBag.Title = "Book Test Drive";
+    ViewBag.Title = "Schedule Appointment";
+    var role = Session["Role"] as string;
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
+
+    // Determine if this is a test drive booking or general appointment
+    var isTestDrive = Model.VehicleId > 0;
 }
 
-<h2>@ViewBag.VehicleTitle</h2>
-
-@using (Html.BeginForm("Create", "Appointments", FormMethod.Post))
-{
-    @Html.AntiForgeryToken()
-
-    @Html.HiddenFor(m => m.VehicleId)
-    @Html.HiddenFor(m => m.AppointmentType)
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.AppointmentDate)
-        @Html.TextBoxFor(m => m.AppointmentDate, new { @class = "form-control", type = "datetime-local", min = DateTime.Now.ToString("yyyy-MM-ddTHH:mm") })
-        @Html.ValidationMessageFor(m => m.AppointmentDate)
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-calendar-plus"></i>
+            </div>
+            <div>
+                <h1 class="mb-1">@(isTestDrive ? "Book Test Drive" : "Schedule Appointment")</h1>
+                <p class="text-muted mb-0">
+                    @(isTestDrive ? "Schedule your test drive for " + ViewBag.VehicleTitle : "Book your appointment with Westend Motors")
+                </p>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.Notes)
-        @Html.TextAreaFor(m => m.Notes, new { @class = "form-control", rows = 3 })
-        @Html.ValidationMessageFor(m => m.Notes)
-    </div>
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="appointment-card">
+                <div class="card-header">
+                    <h5>
+                        <i class="fas @(isTestDrive ? "fa-car" : "fa-calendar") me-2"></i>
+                        @(isTestDrive ? ViewBag.VehicleTitle : "Appointment Details")
+                    </h5>
+                    <p class="mb-0 text-muted">
+                        @(isTestDrive ?
+                          "Fill in the details below to schedule your test drive appointment" :
+                          "Select appointment type and provide your details")
+                    </p>
+                </div>
 
-    <button type="submit" class="btn btn-success">Book Test Drive</button>
+                <div class="card-body">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.Error
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("Create", "Appointments", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        if (isTestDrive)
+                        {
+                            @Html.HiddenFor(m => m.VehicleId)
+                            @Html.HiddenFor(m => m.AppointmentType)
+                        }
+                        else
+                        {
+                            <!-- Appointment Type Selection -->
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-tasks me-2"></i>Appointment Type
+                                </label>
+                                <div class="appointment-type-selector">
+                                    <div class="appointment-type @(Model.AppointmentType == "Test Drive" ? "selected" : "")" data-type="Test Drive">
+                                        <i class="fas fa-car"></i>
+                                        <h6>Test Drive</h6>
+                                        <p>Experience a vehicle firsthand</p>
+                                    </div>
+                                    <div class="appointment-type @(Model.AppointmentType == "Service" ? "selected" : "")" data-type="Service">
+                                        <i class="fas fa-tools"></i>
+                                        <h6>Vehicle Service</h6>
+                                        <p>Maintenance or repairs</p>
+                                    </div>
+                                    <div class="appointment-type @(Model.AppointmentType == "Consultation" ? "selected" : "")" data-type="Consultation">
+                                        <i class="fas fa-comments"></i>
+                                        <h6>Consultation</h6>
+                                        <p>Discuss vehicle options</p>
+                                    </div>
+                                    <div class="appointment-type @(Model.AppointmentType == "Other" ? "selected" : "")" data-type="Other">
+                                        <i class="fas fa-question-circle"></i>
+                                        <h6>Other</h6>
+                                        <p>Different type of appointment</p>
+                                    </div>
+                                </div>
+                                @Html.HiddenFor(m => m.AppointmentType, new { id = "appointmentType" })
+                                @Html.ValidationMessageFor(m => m.AppointmentType, "", new { @class = "validation-message" })
+                            </div>
+
+                            <!-- Vehicle Selection (for non-test drive appointments) -->
+                            <div class="form-group vehicle-selection">
+                                <label class="form-label">
+                                    <i class="fas fa-car me-2"></i>Vehicle (if applicable)
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-icon">
+                                        <i class="fas fa-car"></i>
+                                    </div>
+                                    @Html.DropDownListFor(m => m.VehicleId,
+                                        new SelectList(ViewBag.Vehicles ?? new List<SelectListItem>(), "Value", "Text"),
+                                        "Select a vehicle (optional)",
+                                        new { @class = "form-control" })
+                                </div>
+                            </div>
+                        }
+
+                        <div class="form-group">
+                            <label class="form-label required">
+                                <i class="fas fa-calendar-alt me-2"></i>Preferred Date & Time
+                            </label>
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                @Html.TextBoxFor(m => m.AppointmentDate, new
+                                {
+                                    @class = "form-control",
+                                    type = "datetime-local",
+                                    min = DateTime.Now.ToString("yyyy-MM-ddTHH:mm"),
+                                    placeholder = "Select date and time"
+                                })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.AppointmentDate, "", new { @class = "validation-message" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-sticky-note me-2"></i>Additional Notes
+                            </label>
+                            <div class="input-group">
+                                <div class="input-icon textarea-icon">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                @Html.TextAreaFor(m => m.Notes, new
+                                {
+                                    @class = "form-control textarea-input",
+                                    rows = 4,
+                                    placeholder = "Any specific requirements or questions? (Optional)"
+                                })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Notes, "", new { @class = "validation-message" })
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                @(isTestDrive ? "Book Test Drive" : "Schedule Appointment")
+                            </button>
+                            @if (isTestDrive)
+                            {
+                                <a href="@Url.Action("Details", "Vehicles", new { id = Model.VehicleId })" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Vehicle
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Information Card -->
+            <div class="info-card">
+                <div class="info-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h6>Important Information</h6>
+                </div>
+                <div class="info-content">
+                    <div class="info-item">
+                        <i class="fas fa-id-card"></i>
+                        <span>Please bring a valid driver's license for test drives</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Appointments typically last 30-60 minutes</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone"></i>
+                        <span>We'll call to confirm your appointment</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>Free cancellation up to 24 hours before</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Set minimum datetime for appointment input
+            const now = new Date();
+            const minDate = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+            const formattedMinDate = minDate.toISOString().slice(0, 16);
+            $('#AppointmentDate').attr('min', formattedMinDate);
+
+            // Appointment type selection
+            $('.appointment-type').click(function() {
+                $('.appointment-type').removeClass('selected');
+                $(this).addClass('selected');
+                $('#appointmentType').val($(this).data('type'));
+            });
+
+            // Set initial appointment type if it's a test drive
+            @if (isTestDrive)
+            {
+                <text>$('#appointmentType').val('Test Drive');</text>
+            }
+        });
+    </script>
 }
+
+<style>
+    /* Appointment Type Selector Styles */
+    .appointment-type-selector {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .appointment-type {
+        border: 2px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .appointment-type:hover {
+            border-color: #3498db;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .appointment-type.selected {
+            border-color: #3498db;
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        .appointment-type i {
+            font-size: 2rem;
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+
+        .appointment-type h6 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .appointment-type p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .appointment-type-selector {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

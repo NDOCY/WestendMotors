@@ -179,7 +179,7 @@ namespace WestendMotors.Controllers
                 FullName = fullName,
                 Email = email,
                 PasswordHash = password,
-                Role = role
+                Role = "Customer"
             };
 
             db.Users.Add(user);

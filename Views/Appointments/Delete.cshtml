@@ -2,6 +2,16 @@
 
 @{
     ViewBag.Title = "Delete";
+    var role = Session["Role"] as string;
+
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
 }
 
 <h2>Delete</h2>
@@ -20,11 +30,11 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Vehicle.Make)
+            @Html.DisplayNameFor(model => model.Vehicle.Title)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Vehicle.Make)
+            @Html.DisplayFor(model => model.Vehicle.Title)
         </dd>
 
         <dt>
