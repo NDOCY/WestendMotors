@@ -4,15 +4,23 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using WestendMotors.Models;
+using WestendMotors.Services;
 
 namespace WestendMotors.Controllers
 {
     public class UsersController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+        private readonly VehicleAssignmentEmailService _emailService;
+
+        public UsersController()
+        {
+            _emailService = new VehicleAssignmentEmailService();
+        }
 
         // GET: Users
         public ActionResult Index()
@@ -207,34 +215,106 @@ namespace WestendMotors.Controllers
 
         public ActionResult AssignVehicle(int userId)
         {
+            var user = db.Users.Find(userId);
+            if (user == null)
+            {
+                return HttpNotFound("User not found");
+            }
+
             ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title");
             ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" });
 
             var model = new AssignVehicleViewModel
             {
                 UserId = userId,
-                PurchaseDate = DateTime.Today
+                PurchaseDate = DateTime.Today,
+                NextServiceDate = DateTime.Today.AddMonths(1)
             };
 
+            ViewBag.UserName = user.FullName;
             return View(model);
         }
 
+        // Update your AssignVehicle method to send email
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult AssignVehicle(AssignVehicleViewModel model)
+        public async Task<ActionResult> AssignVehicle(AssignVehicleViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // Get the selected vehicle
-                var vehicle = db.Vehicles.FirstOrDefault(v => v.Id == model.VehicleId);
-                if (vehicle == null)
+                ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title", model.VehicleId);
+                ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, model.RecurrenceType);
+
+                var user = db.Users.Find(model.UserId);
+                ViewBag.UserName = user?.FullName;
+
+                return View(model);
+            }
+
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
                 {
-                    ModelState.AddModelError("", "Selected vehicle not found.");
-                }
-                else
-                {
+                    // Get the selected vehicle
+                    var vehicle = db.Vehicles
+                        .Include(v => v.Specs)
+                        .FirstOrDefault(v => v.Id == model.VehicleId);
+
+                    if (vehicle == null)
+                    {
+                        ModelState.AddModelError("VehicleId", "Selected vehicle not found.");
+                        ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title", model.VehicleId);
+                        ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, model.RecurrenceType);
+
+                        var user = db.Users.Find(model.UserId);
+                        ViewBag.UserName = user?.FullName;
+
+                        return View(model);
+                    }
+
+                    // Check if vehicle is still available
+                    if (!vehicle.IsAvailable)
+                    {
+                        ModelState.AddModelError("VehicleId", "This vehicle is no longer available.");
+                        ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title", model.VehicleId);
+                        ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, model.RecurrenceType);
+
+                        var user = db.Users.Find(model.UserId);
+                        ViewBag.UserName = user?.FullName;
+
+                        return View(model);
+                    }
+
+                    // Check if user already has this vehicle assigned
+                    var existingAssignment = db.UserVehicles
+                        .FirstOrDefault(uv => uv.UserId == model.UserId && uv.VehicleId == model.VehicleId);
+
+                    if (existingAssignment != null)
+                    {
+                        ModelState.AddModelError("", "This vehicle is already assigned to this user.");
+                        ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title", model.VehicleId);
+                        ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, model.RecurrenceType);
+
+                        var user = db.Users.Find(model.UserId);
+                        ViewBag.UserName = user?.FullName;
+
+                        return View(model);
+                    }
+
+                    // Get user details
+                    var userForEmail = db.Users.Find(model.UserId);
+                    if (userForEmail == null)
+                    {
+                        ModelState.AddModelError("", "User not found.");
+                        ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title", model.VehicleId);
+                        ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, model.RecurrenceType);
+                        return View(model);
+                    }
+
                     // Mark vehicle as unavailable
                     vehicle.IsAvailable = false;
+                    db.Entry(vehicle).State = EntityState.Modified;
+                    db.SaveChanges();
 
                     // Create UserVehicle
                     var userVehicle = new UserVehicle
@@ -245,31 +325,68 @@ namespace WestendMotors.Controllers
                         Notes = model.Notes
                     };
 
+                    db.UserVehicles.Add(userVehicle);
+                    db.SaveChanges();
+
+                    // Verify the UserVehicle was saved correctly
+                    var savedUserVehicle = db.UserVehicles
+                        .Where(uv => uv.UserId == model.UserId && uv.VehicleId == model.VehicleId)
+                        .OrderByDescending(uv => uv.Id)
+                        .FirstOrDefault();
+
+                    if (savedUserVehicle == null || savedUserVehicle.Id == 0)
+                    {
+                        throw new Exception("Failed to save UserVehicle assignment");
+                    }
+
                     // Create ServiceSchedule
                     var serviceSchedule = new ServiceSchedule
                     {
+                        UserVehicleId = savedUserVehicle.Id,
                         RecurrenceType = model.RecurrenceType,
                         NextServiceDate = model.NextServiceDate,
-                        Notes = model.ServiceNotes,
-                        UserVehicle = userVehicle
+                        Notes = model.ServiceNotes
                     };
 
-                    db.UserVehicles.Add(userVehicle);
                     db.ServiceSchedules.Add(serviceSchedule);
-
-                    // Save all changes including IsAvailable update
                     db.SaveChanges();
 
+                    transaction.Commit();
+
+                    // Send assignment email
+                    await _emailService.SendVehicleAssignmentAsync(userForEmail, vehicle, savedUserVehicle, serviceSchedule);
+
+                    TempData["SuccessMessage"] = $"Vehicle '{vehicle.Title}' assigned successfully to {userForEmail.FullName}. Service schedule created and customer notified.";
                     return RedirectToAction("Details", "Users", new { id = model.UserId });
                 }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+
+                    // Get the innermost exception for better error message
+                    Exception innerException = ex;
+                    while (innerException.InnerException != null)
+                    {
+                        innerException = innerException.InnerException;
+                    }
+
+                    // Log the full error for debugging
+                    System.Diagnostics.Debug.WriteLine($"ERROR in AssignVehicle: {ex.ToString()}");
+                    System.Diagnostics.Debug.WriteLine($"Inner Exception: {innerException.Message}");
+
+                    ModelState.AddModelError("", $"An error occurred while assigning the vehicle: {innerException.Message}");
+
+                    // Repopulate dropdowns
+                    ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title", model.VehicleId);
+                    ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, model.RecurrenceType);
+
+                    var user = db.Users.Find(model.UserId);
+                    ViewBag.UserName = user?.FullName;
+
+                    return View(model);
+                }
             }
-
-            ViewBag.Vehicles = new SelectList(db.Vehicles.Where(v => v.IsAvailable), "Id", "Title", model.VehicleId);
-            ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, model.RecurrenceType);
-            return View(model);
         }
-
-
 
     }
 }

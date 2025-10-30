@@ -1,0 +1,827 @@
+﻿@model WestendMotors.Models.ServiceHistoryFilterViewModel
+@{
+    ViewBag.Title = $"Service History - {Model.VehicleTitle}";
+    var role = Session["Role"] as string;
+    var isAdmin = role == "Admin";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="header-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div>
+                    <h2 class="mb-1">Service History</h2>
+                    <p class="text-muted mb-0">@Model.VehicleTitle - Complete service record</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                
+                    @Html.ActionLink("Book Service", "Create", "Appointments",
+                             new
+                             {
+                                 vehicleId = Model.VehicleId,
+                                 appointmentType = "Service",
+                                 serviceType = "Scheduled Maintenance"
+                             },
+                             new { @class = "btn btn-primary me-2" })
+                
+
+                    @if (isAdmin)
+                    {
+                        @Html.ActionLink("Add Service Record", "QuickCreate", new { vehicleId = Model.VehicleId },
+                            new { @class = "btn btn-success" })
+                    }
+                </div>
+        </div>
+    </div>
+
+    <!-- Filter Form Card -->
+    <div class="filter-card mb-4">
+        <div class="card-header">
+            <h6 class="card-title">
+                <i class="fas fa-filter me-2"></i>
+                Filter Service Records
+            </h6>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("VehicleServiceHistory", "ServiceRecords", FormMethod.Get))
+            {
+                @Html.HiddenFor(m => m.VehicleId)
+                <div class="filter-row">
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.StartDate, htmlAttributes: new { @class = "form-label" })
+                        <div class="input-group">
+                            <i class="fas fa-calendar input-icon"></i>
+                            @Html.TextBoxFor(m => m.StartDate, "{0:yyyy-MM-dd}",
+                                new { @class = "form-control", type = "date" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.EndDate, htmlAttributes: new { @class = "form-label" })
+                        <div class="input-group">
+                            <i class="fas fa-calendar input-icon"></i>
+                            @Html.TextBoxFor(m => m.EndDate, "{0:yyyy-MM-dd}",
+                                new { @class = "form-control", type = "date" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.ServiceType, htmlAttributes: new { @class = "form-label" })
+                        <div class="input-group">
+                            <i class="fas fa-wrench input-icon"></i>
+                            @Html.DropDownListFor(m => m.ServiceType, Model.ServiceTypes, "All Service Types",
+                                new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SortBy, htmlAttributes: new { @class = "form-label" })
+                        <div class="input-group">
+                            <i class="fas fa-sort input-icon"></i>
+                            @Html.DropDownListFor(m => m.SortBy, Model.SortOptions,
+                                new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Apply Filters
+                    </button>
+                    @Html.ActionLink("Clear Filters", "VehicleServiceHistory",
+                        new { vehicleId = Model.VehicleId }, new { @class = "btn btn-secondary" })
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Service Records Table Card -->
+    <div class="data-card mb-4">
+        <div class="data-card-header">
+            <h6 class="card-title">
+                <i class="fas fa-clipboard-list me-2"></i>
+                Service Records
+            </h6>
+            @if (Model.ServiceRecords.Any())
+            {
+                <div class="header-stats">
+                    <span class="stat-badge">@Model.ServiceRecords.Count Records</span>
+                </div>
+            }
+        </div>
+        <div class="data-card-body">
+            @if (Model.ServiceRecords.Any())
+            {
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Service Date</th>
+                                <th>Service Type</th>
+                                <th>Description</th>
+                                <th>Mileage</th>
+                                <th>Cost</th>
+                                <th>Service Center</th>
+                                @if (isAdmin)
+                                {
+                                    <th>Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var record in Model.ServiceRecords)
+                            {
+                                <tr>
+                                    <td class="font-medium">@record.ServiceDate.ToString("d")</td>
+                                    <td>
+                                        <span class="service-type-badge">@record.ServiceType</span>
+                                    </td>
+                                    <td class="description-cell">@record.Description</td>
+                                    <td>
+                                        <span class="mileage">@(record.Mileage?.ToString("N0") ?? "N/A")</span>
+                                        @if (record.Mileage.HasValue)
+                                        {
+                                            <small class="text-muted d-block">miles</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="cost-value">
+                                            @(record.Cost.HasValue ? record.Cost.Value.ToString("C") : "N/A")
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">@record.ServiceCenter</td>
+                                    @if (isAdmin)
+                                    {
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="@Url.Action("Details", new { id = record.ServiceRecordId })"
+                                                   class="btn-action btn-info" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                               
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h6>No Service Records</h6>
+                    <p class="text-muted">No service records found for this vehicle.</p>
+                    @if (isAdmin)
+                    {
+                        @Html.ActionLink("Add First Service Record", "QuickCreate", new { vehicleId = Model.VehicleId },
+                            new { @class = "btn btn-success" })
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Summary Statistics Card -->
+    @if (Model.ServiceRecords.Any())
+    {
+        <div class="summary-card mb-4">
+            <div class="card-header">
+                <h6 class="card-title">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Service Summary
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-icon total-records">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="summary-content">
+                            <div class="summary-value">@Model.ServiceRecords.Count</div>
+                            <div class="summary-label">Total Records</div>
+                        </div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-icon total-cost">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="summary-content">
+                            <div class="summary-value">
+                                @{
+                                    var totalCost = Model.ServiceRecords.Where(r => r.Cost.HasValue).Sum(r => r.Cost.Value);
+                                }
+                                @totalCost.ToString("C")
+                            </div>
+
+                            
+                            <div class="summary-label">Total Cost</div>
+                        </div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-icon average-cost">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="summary-content">
+                            @{
+                                var recordsWithCost = Model.ServiceRecords.Where(r => r.Cost.HasValue).ToList();
+                                var averageCost = recordsWithCost.Any() ? recordsWithCost.Average(r => r.Cost.Value) : 0;
+                            }
+                            <div class="summary-value">@averageCost.ToString("C")</div>
+                            <div class="summary-label">Average Cost</div>
+                        </div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-icon last-service">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="summary-content">
+                            <div class="summary-value">@Model.ServiceRecords.Max(r => r.ServiceDate).ToString("MMM d, yyyy")</div>
+                            <div class="summary-label">Last Service</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Navigation Actions -->
+    <div class="action-bar">
+        @Html.ActionLink("Back to User Details", "Details", "Users",
+            new { id = Session["UserId"] }, new { @class = "btn btn-secondary" })
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Header Styling */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Card Styling */
+        .filter-card, .data-card, .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .card-header, .data-card-header {
+            background: #f8f9fa;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-body, .data-card-body {
+            padding: 1.5rem;
+        }
+
+        /* Filter Form */
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Input Styling */
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            z-index: 5;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            background: white;
+            padding-left: 2.75rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* Select Styling */
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 3rem;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-bottom: 1px solid #f1f1f1;
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .font-medium {
+            font-weight: 600;
+        }
+
+        /* Service Type Badge */
+        .service-type-badge {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .description-cell {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mileage {
+            font-weight: 600;
+        }
+
+        .cost-value {
+            font-weight: 600;
+            color: var(--success-color);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .btn-action.btn-info {
+            background: var(--info-color);
+        }
+
+        .btn-action.btn-info:hover {
+            background: #138496;
+            transform: scale(1.1);
+        }
+
+        .btn-action.btn-info::before {
+            content: '\f06e';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+        }
+
+        .btn-action.btn-warning {
+            background: var(--warning-color);
+        }
+
+        .btn-action.btn-warning:hover {
+            background: #e0a800;
+            transform: scale(1.1);
+        }
+
+        .btn-action.btn-warning::before {
+            content: '\f044';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+        }
+
+        .btn-action:hover {
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Summary Statistics */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .summary-icon.total-records { background: var(--accent-color); }
+        .summary-icon.total-cost { background: var(--success-color); }
+        .summary-icon.average-cost { background: var(--warning-color); }
+        .summary-icon.last-service { background: var(--info-color); }
+
+        .summary-content {
+            flex: 1;
+        }
+
+        .summary-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        /* Header Stats */
+        .stat-badge {
+            background: var(--danger-color);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Button Styling */
+        .btn {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2c3e50;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            background: #f8f9fa;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state h6 {
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus, .btn-action:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+            }
+
+            .page-header .d-flex {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-actions .btn {
+                width: 100%;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem 1rem;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-bar .btn {
+                width: 100%;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .container-fluid {
+                padding: 1rem;
+            }
+
+            .card-body, .data-card-body {
+                padding: 1rem;
+            }
+
+            .empty-state {
+                padding: 2rem 1rem;
+            }
+
+            .empty-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Animation */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Utilities */
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .d-block {
+            display: block;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .justify-content-between {
+            justify-content: space-between;
+        }
+
+        .align-items-center {
+            align-items: center;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Auto-set end date to today if start date is set
+            $('#StartDate').change(function () {
+                if ($(this).val() && !$('#EndDate').val()) {
+                    var today = new Date().toISOString().split('T')[0];
+                    $('#EndDate').val(today);
+                }
+            });
+        });
+    </script>
+}

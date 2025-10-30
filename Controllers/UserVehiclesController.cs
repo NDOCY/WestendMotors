@@ -15,12 +15,19 @@ namespace WestendMotors.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: UserVehicles
+        // GET: UserVehicles
         public ActionResult Index()
         {
-            var userVehicles = db.UserVehicles.Include(u => u.ServiceSchedule).Include(u => u.User).Include(u => u.Vehicle);
+            // Change from .Include(u => u.ServiceSchedule) to .Include(u => u.ServiceSchedules)
+            var userVehicles = db.UserVehicles
+                .Include(u => u.ServiceSchedules)  // Changed to plural
+                .Include(u => u.User)
+                .Include(u => u.Vehicle);
+
             return View(userVehicles.ToList());
         }
 
+        // GET: UserVehicles/Details/5
         // GET: UserVehicles/Details/5
         public ActionResult Details(int? id)
         {
@@ -28,26 +35,33 @@ namespace WestendMotors.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            UserVehicle userVehicle = db.UserVehicles.Find(id);
+
+            // Include the ServiceSchedules collection
+            UserVehicle userVehicle = db.UserVehicles
+                .Include(u => u.ServiceSchedules)  // Added this include
+                .Include(u => u.User)
+                .Include(u => u.Vehicle)
+                .FirstOrDefault(u => u.Id == id);
+
             if (userVehicle == null)
             {
                 return HttpNotFound();
             }
+
             return View(userVehicle);
+        
         }
 
         // GET: UserVehicles/Create
         public ActionResult Create()
         {
-            ViewBag.Id = new SelectList(db.ServiceSchedules, "Id", "RecurrenceType");
+            // Remove the ServiceSchedule dropdown since it's now a collection
             ViewBag.UserId = new SelectList(db.Users, "UserId", "FullName");
             ViewBag.VehicleId = new SelectList(db.Vehicles, "Id", "Title");
             return View();
         }
 
         // POST: UserVehicles/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Id,UserId,VehicleId,PurchaseDate,Notes")] UserVehicle userVehicle)
@@ -59,12 +73,13 @@ namespace WestendMotors.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.Id = new SelectList(db.ServiceSchedules, "Id", "RecurrenceType", userVehicle.Id);
+            // Remove ServiceSchedule from ViewBag
             ViewBag.UserId = new SelectList(db.Users, "UserId", "FullName", userVehicle.UserId);
             ViewBag.VehicleId = new SelectList(db.Vehicles, "Id", "Title", userVehicle.VehicleId);
             return View(userVehicle);
         }
 
+        // GET: UserVehicles/Edit/5
         // GET: UserVehicles/Edit/5
         public ActionResult Edit(int? id)
         {
@@ -72,20 +87,20 @@ namespace WestendMotors.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
             UserVehicle userVehicle = db.UserVehicles.Find(id);
             if (userVehicle == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.Id = new SelectList(db.ServiceSchedules, "Id", "RecurrenceType", userVehicle.Id);
+
+            // Remove ServiceSchedule from ViewBag
             ViewBag.UserId = new SelectList(db.Users, "UserId", "FullName", userVehicle.UserId);
             ViewBag.VehicleId = new SelectList(db.Vehicles, "Id", "Title", userVehicle.VehicleId);
             return View(userVehicle);
         }
 
         // POST: UserVehicles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,UserId,VehicleId,PurchaseDate,Notes")] UserVehicle userVehicle)
@@ -96,7 +111,8 @@ namespace WestendMotors.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.Id = new SelectList(db.ServiceSchedules, "Id", "RecurrenceType", userVehicle.Id);
+
+            // Remove ServiceSchedule from ViewBag
             ViewBag.UserId = new SelectList(db.Users, "UserId", "FullName", userVehicle.UserId);
             ViewBag.VehicleId = new SelectList(db.Vehicles, "Id", "Title", userVehicle.VehicleId);
             return View(userVehicle);
@@ -171,7 +187,7 @@ namespace WestendMotors.Controllers
         }
 
         // GET: Set service schedule for assigned vehicle
-        public ActionResult SetServiceSchedule(int userVehicleId)
+        /*public ActionResult SetServiceSchedule(int userVehicleId)
         {
             var userVehicle = db.UserVehicles.Include(uv => uv.Vehicle).Include(uv => uv.User).FirstOrDefault(uv => uv.Id == userVehicleId);
             if (userVehicle == null) return HttpNotFound();
@@ -196,6 +212,47 @@ namespace WestendMotors.Controllers
 
                 return RedirectToAction("Index", "ServiceRecords");
             }
+            ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, schedule.RecurrenceType);
+            return View(schedule);
+        }*/
+
+        // GET: Set service schedule for assigned vehicle
+        public ActionResult SetServiceSchedule(int userVehicleId)
+        {
+            var userVehicle = db.UserVehicles
+                .Include(uv => uv.Vehicle)
+                .Include(uv => uv.User)
+                .FirstOrDefault(uv => uv.Id == userVehicleId);
+
+            if (userVehicle == null) return HttpNotFound();
+
+            ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" });
+
+            // Create a new service schedule (note: this will add to the collection)
+            var model = new ServiceSchedule
+            {
+                UserVehicleId = userVehicleId,
+                NextServiceDate = DateTime.Now.AddMonths(1)
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult SetServiceSchedule(ServiceSchedule schedule)
+        {
+            if (ModelState.IsValid)
+            {
+                // Calculate next service date based on recurrence type
+                schedule.NextServiceDate = CalculateNextServiceDate(DateTime.Now, schedule.RecurrenceType);
+
+                db.ServiceSchedules.Add(schedule);
+                db.SaveChanges();
+
+                return RedirectToAction("Index", "ServiceRecords");
+            }
+
             ViewBag.RecurrenceOptions = new SelectList(new[] { "Monthly", "Quarterly", "6 Months", "Yearly" }, schedule.RecurrenceType);
             return View(schedule);
         }

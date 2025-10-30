@@ -103,137 +103,177 @@
                     }
 
                     <!-- Customer Images -->
-                    <div class="vehicle-images">
-                        <h6><i class="fas fa-camera me-2"></i>Customer Images</h6>
-                        <div class="image-grid">
-                            @foreach (var image in Model.Images)
-                            {
-                                <div class="image-item">
-                                    <img src="@image.ImagePath" class="vehicle-image" alt="Customer vehicle" onclick="openImageModal('@image.ImagePath')" />
-                                    <div class="image-overlay">
-                                        <a href="@image.ImagePath" target="_blank" class="btn btn-light btn-sm">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </a>
+                    @if (Model.Images != null && Model.Images.Any())
+                    {
+                        <div class="vehicle-images">
+                            <h6><i class="fas fa-camera me-2"></i>Customer Images</h6>
+                            <div class="image-grid">
+                                @foreach (var image in Model.Images)
+                                {
+                                    <div class="image-item">
+                                        <img src="@image.ImagePath" class="vehicle-image" alt="Customer vehicle" onclick="openImageModal('@image.ImagePath')" />
+                                        <div class="image-overlay">
+                                            <a href="@image.ImagePath" target="_blank" class="btn btn-light btn-sm">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
-                            }
+                                }
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
 
         <!-- Target Vehicle Details -->
-        <div class="col-lg-6 mb-4">
-            <div class="vehicle-card target-vehicle">
-                <div class="vehicle-header">
-                    <div class="header-content">
-                        <i class="fas fa-car"></i>
-                        <div>
-                            <h5>Target Vehicle</h5>
-                            <h3>@Model.TargetVehicle.Title</h3>
-                        </div>
-                    </div>
-                    <div class="target-price">
-                        <span class="price-label">Price</span>
-                        <span class="price-amount">@Model.TargetVehicle.Price.ToString("C")</span>
-                    </div>
-                </div>
-
-                <div class="vehicle-body">
-                    <!-- Target Vehicle Specs -->
-                    <div class="specs-grid">
-                        <div class="spec-item">
-                            <i class="fas fa-calendar"></i>
+        <!-- Target Vehicle Details -->
+        @if (Model.TargetVehicle != null)
+        {
+            <div class="col-lg-6 mb-4">
+                <div class="vehicle-card target-vehicle">
+                    <div class="vehicle-header">
+                        <div class="header-content">
+                            <i class="fas fa-car"></i>
                             <div>
-                                <span class="spec-label">Year</span>
-                                <span class="spec-value">@Model.TargetVehicle.Specs.Year</span>
+                                <h5>Target Vehicle</h5>
+                                <h3>@Model.TargetVehicle.Title</h3>
                             </div>
                         </div>
-                        <div class="spec-item">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <div>
-                                <span class="spec-label">Mileage</span>
-                                <span class="spec-value">@Model.TargetVehicle.Specs.Mileage.ToString("N0") km</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <i class="fas fa-gas-pump"></i>
-                            <div>
-                                <span class="spec-label">Fuel</span>
-                                <span class="spec-value">@Model.TargetVehicle.Specs.FuelType</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <i class="fas fa-cogs"></i>
-                            <div>
-                                <span class="spec-label">Transmission</span>
-                                <span class="spec-value">@Model.TargetVehicle.Specs.Transmission</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <i class="fas fa-palette"></i>
-                            <div>
-                                <span class="spec-label">Color</span>
-                                <span class="spec-value">@Model.TargetVehicle.Specs.Color</span>
-                            </div>
+                        <div class="target-price">
+                            <span class="price-label">Price</span>
+                            <span class="price-amount">@Model.TargetVehicle.Price.ToString("C")</span>
                         </div>
                     </div>
 
-                    <!-- Target Vehicle Images -->
-                    <div class="vehicle-images">
-                        <h6><i class="fas fa-camera me-2"></i>Vehicle Images</h6>
-                        <div class="image-grid">
-                            @foreach (var image in Model.TargetVehicle.Images.Take(6))
-                            {
-                                <div class="image-item">
-                                    <img src="@image.ImagePath" class="vehicle-image" alt="Target vehicle" onclick="openImageModal('@image.ImagePath')" />
+                    <div class="vehicle-body">
+                        <!-- Target Vehicle Specs -->
+                        @if (Model.TargetVehicle.Specs != null)
+                        {
+                            <div class="specs-grid">
+                                <div class="spec-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <div>
+                                        <span class="spec-label">Year</span>
+                                        <span class="spec-value">@Model.TargetVehicle.Specs.Year</span>
+                                    </div>
                                 </div>
-                            }
-                        </div>
+                                <div class="spec-item">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <div>
+                                        <span class="spec-label">Mileage</span>
+                                        <span class="spec-value">@Model.TargetVehicle.Specs.Mileage.ToString("N0") km</span>
+                                    </div>
+                                </div>
+                                <div class="spec-item">
+                                    <i class="fas fa-gas-pump"></i>
+                                    <div>
+                                        <span class="spec-label">Fuel</span>
+                                        <span class="spec-value">@Model.TargetVehicle.Specs.FuelType</span>
+                                    </div>
+                                </div>
+                                <div class="spec-item">
+                                    <i class="fas fa-cogs"></i>
+                                    <div>
+                                        <span class="spec-label">Transmission</span>
+                                        <span class="spec-value">@Model.TargetVehicle.Specs.Transmission</span>
+                                    </div>
+                                </div>
+                                <div class="spec-item">
+                                    <i class="fas fa-palette"></i>
+                                    <div>
+                                        <span class="spec-label">Color</span>
+                                        <span class="spec-value">@Model.TargetVehicle.Specs.Color</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Vehicle specifications not available.
+                            </div>
+                        }
+
+                        <!-- Target Vehicle Images -->
+                        <!-- Target Vehicle Images -->
+                        @if (Model.TargetVehicle.Images != null && Model.TargetVehicle.Images.Any())
+                        {
+                            <div class="vehicle-images">
+                                <h6><i class="fas fa-camera me-2"></i>Vehicle Images</h6>
+                                <div class="image-grid">
+                                    @foreach (var image in Model.TargetVehicle.Images.Take(6))
+                                    {
+                                        <div class="image-item">
+                                            <img src="@image.ImagePath" class="vehicle-image" alt="Target vehicle" onclick="openImageModal('@image.ImagePath')" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="col-lg-6 mb-4">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Target vehicle information not available.
+                </div>
+            </div>
+        }
     </div>
 
     <!-- Customer Information Card -->
-    <div class="info-card customer-info mb-4">
-        <div class="info-header">
-            <h5><i class="fas fa-user me-2"></i>Customer Information</h5>
-        </div>
-        <div class="info-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="info-item">
-                        <i class="fas fa-user"></i>
-                        <div>
-                            <span class="info-label">Full Name</span>
-                            <span class="info-value">@Model.Customer.FullName</span>
+    @if (Model.Customer != null)
+    {
+        <div class="info-card customer-info mb-4">
+            <div class="info-header">
+                <h5><i class="fas fa-user me-2"></i>Customer Information</h5>
+            </div>
+            <div class="info-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <i class="fas fa-user"></i>
+                            <div>
+                                <span class="info-label">Full Name</span>
+                                <span class="info-value">@Model.Customer.FullName</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="info-item">
-                        <i class="fas fa-envelope"></i>
-                        <div>
-                            <span class="info-label">Email</span>
-                            <span class="info-value">@Model.Customer.Email</span>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <span class="info-label">Email</span>
+                                <span class="info-value">@Model.Customer.Email</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="info-item">
-                        <i class="fas fa-calendar-plus"></i>
-                        <div>
-                            <span class="info-label">Request Date</span>
-                            <span class="info-value">@Model.RequestDate.ToString("MMM dd, yyyy")</span>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <i class="fas fa-calendar-plus"></i>
+                            <div>
+                                <span class="info-label">Request Date</span>
+                                <span class="info-value">@Model.RequestDate.ToString("MMM dd, yyyy")</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Customer information not available.
+        </div>
+    }
 
     @if (role == "Admin")
     {
@@ -333,6 +373,131 @@
                     }
                 </div>
 
+                <!-- Admin Assignment Section -->
+                <div class="divider"></div>
+
+                <div class="action-section">
+                    <h6><i class="fas fa-user-shield me-2"></i>Assign Admin to Appointment & Trade-In</h6>
+
+                    @using (Html.BeginForm("AssignAdminToAppointment", "TradeInRequests", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("tradeInId", Model.TradeInRequestId)
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-user-cog me-2"></i>Select Admin User
+                                    </label>
+                                    <select name="adminId" class="form-control" required>
+                                        <option value="">-- Select Admin User --</option>
+                                        @{
+                                            var adminUsers = ViewBag.AdminUsers as SelectList;
+                                            if (adminUsers != null)
+                                            {
+                                                foreach (var item in adminUsers)
+                                                {
+                                                    <option value="@item.Value" selected="@(item.Selected ? "selected" : null)">
+                                                        @item.Text
+                                                    </option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar me-2"></i>Select Appointment to Assign
+                                    </label>
+                                    <select name="appointmentId" class="form-control" required>
+                                        <option value="">-- Select Appointment --</option>
+                                        @if (Model.Appointments != null && Model.Appointments.Any())
+                                        {
+                                            foreach (var appt in Model.Appointments.Where(a => a.Status == "Scheduled"))
+                                            {
+                                                <option value="@appt.Id">
+                                                    @appt.AppointmentDate.ToString("MMM dd, yyyy HH:mm")
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Assign Admin
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Current Admin Assignment Display -->
+                    @if (Model.AssignedStaff != null)
+                    {
+                        <div class="current-assignment mt-3 p-3 bg-light rounded">
+                            <h6><i class="fas fa-info-circle me-2"></i>Currently Assigned Admin</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="assignment-icon me-3">
+                                    <i class="fas fa-user-shield fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <strong>@Model.AssignedStaff.FullName</strong>
+                                    <span class="badge bg-success ms-2">@Model.AssignedStaff.Role</span>
+                                    <br>
+                                    <small class="text-muted">
+                                        Assigned on: @Model.AssignedDate?.ToString("MMM dd, yyyy")
+                                        @{
+                                            var contactInfo = new List<string>();
+                                            if (!string.IsNullOrEmpty(Model.AssignedStaff.Email))
+                                            {
+                                                contactInfo.Add($"Email: {Model.AssignedStaff.Email}");
+                                            }
+                                            if (!string.IsNullOrEmpty(Model.AssignedStaff.Phone))
+                                            {
+                                                contactInfo.Add($"Phone: {Model.AssignedStaff.Phone}");
+                                            }
+                                        }
+                                        @foreach (var info in contactInfo)
+                                        {
+                                            <br />@info
+                                        }
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Appointment Admin Assignments -->
+                    @if (Model.Appointments != null && Model.Appointments.Any(a => a.AssignedStaff != null))
+                    {
+                        <div class="appointment-assignments mt-3">
+                            <h6><i class="fas fa-calendar-check me-2"></i>Appointment Admin Assignments</h6>
+                            @foreach (var appt in Model.Appointments.Where(a => a.AssignedStaff != null).OrderBy(a => a.AppointmentDate))
+                            {
+                                <div class="appointment-assignment-item p-3 border rounded mb-2">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong>Appointment:</strong> @appt.AppointmentDate.ToString("MMM dd, yyyy HH:mm")<br>
+                                            <strong>Admin:</strong> @appt.AssignedStaff.FullName
+                                            <span class="badge bg-info">@appt.AssignedStaff.Role</span>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <small class="text-muted">
+                                                Assigned: @appt.AssignedDate?.ToString("MMM dd, yyyy")<br>
+                                                Status: <span class="status-badge status-@appt.Status.ToLower()">@appt.Status</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
                 <!-- Existing Appointments -->
                 @if (Model.Appointments != null && Model.Appointments.Any())
                 {
@@ -378,10 +543,15 @@
         <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i>Back to List
         </a>
-        <a href="@Url.Action("Details", "Users", new { id = Model.Customer.UserId })" class="btn btn-info">
-            <i class="fas fa-user me-2"></i>View Customer Profile
-        </a>
-        @if (role == "Admin")
+
+        @if (Model.Customer != null)
+        {
+            <a href="@Url.Action("Details", "Users", new { id = Model.Customer.UserId })" class="btn btn-info">
+                <i class="fas fa-user me-2"></i>View Customer Profile
+            </a>
+        }
+
+        @if (role == "Admin" && Model.TargetVehicle != null)
         {
             <a href="@Url.Action("Details", "Vehicles", new { id = Model.TargetVehicle.Id })" class="btn btn-success">
                 <i class="fas fa-car me-2"></i>View Target Vehicle

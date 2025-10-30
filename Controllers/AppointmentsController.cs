@@ -4,15 +4,24 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using WestendMotors.Models;
+using WestendMotors.Services;
 
 namespace WestendMotors.Controllers
 {
     public class AppointmentsController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+
+        private readonly AppointmentEmailService _emailService;
+
+        public AppointmentsController()
+        {
+            _emailService = new AppointmentEmailService();
+        }
 
         // GET: Appointments
         /*public ActionResult Index()
@@ -74,6 +83,7 @@ namespace WestendMotors.Controllers
         }
 
         // GET: Appointments/Details/5
+        /*
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -86,11 +96,42 @@ namespace WestendMotors.Controllers
                 return HttpNotFound();
             }
             return View(appointment);
+        }*/
+        // Update your Details method to include staff
+        public ActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var appointment = db.Appointments
+                .Include(a => a.Customer)
+                .Include(a => a.Vehicle)
+                .Include(a => a.AssignedStaff) // Include assigned staff
+                .Include(a => a.OriginalAppointment)
+                .Include(a => a.Vehicle.Images) // Include vehicle images
+                .FirstOrDefault(a => a.AppointmentId == id);
+
+            if (appointment == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Get available staff for dropdown (Admin and Sales roles)
+            ViewBag.AvailableStaff = new SelectList(
+                db.Users.Where(u => u.IsActive && (u.Role == "Admin" || u.Role == "Sales")),
+                "UserId",
+                "FullName",
+                appointment.AssignedStaffId
+            );
+
+            return View(appointment);
         }
 
         // GET: Appointments/Create
         // GET: Appointments/Create?vehicleId=5&vehicleTitle=Toyota%20Camry
-       // [Authorize]
+        // [Authorize]
         /*public ActionResult Create(int vehicleId, string vehicleTitle)
         {
             var appointment = new Appointment
@@ -106,7 +147,9 @@ namespace WestendMotors.Controllers
 
         // GET: Appointments/Create
         // [Authorize]
-        public ActionResult Create(int? vehicleId, string vehicleTitle)
+        // GET: Appointments/Create
+        // GET: Appointments/Create
+        public ActionResult Create(int? vehicleId, string appointmentType, string serviceType)
         {
             // Check if user is logged in
             if (Session["UserId"] == null)
@@ -116,33 +159,47 @@ namespace WestendMotors.Controllers
 
             var appointment = new Appointment();
 
-            // If vehicleId is provided, pre-populate the vehicle info
+            // Determine the appointment type and behavior
             if (vehicleId.HasValue)
             {
                 appointment.VehicleId = vehicleId.Value;
-                appointment.AppointmentType = "Test Drive";
-                ViewBag.VehicleTitle = vehicleTitle ?? db.Vehicles.Find(vehicleId.Value)?.Title;
+                var vehicle = db.Vehicles.Find(vehicleId.Value);
+                ViewData["VehicleTitle"] = vehicle?.Title;
+
+                // Set appointment type based on parameter or default to Test Drive
+                appointment.AppointmentType = !string.IsNullOrEmpty(appointmentType) ? appointmentType : "Test Drive";
+
+                // If it's a service appointment, set service type if provided
+                if (appointment.AppointmentType == "Service" && !string.IsNullOrEmpty(serviceType))
+                {
+                    appointment.ServiceType = serviceType;
+                }
             }
             else
             {
-                // For general appointments, set default type or let user choose
-                appointment.AppointmentType = "Consultation";
-                ViewBag.VehicleTitle = "Select a Vehicle";
+                // For general appointments without vehicle
+                appointment.AppointmentType = !string.IsNullOrEmpty(appointmentType) ? appointmentType : "Consultation";
+                ViewData["VehicleTitle"] = "Select a Vehicle (Optional)";
 
-                // Populate vehicles for dropdown
-                ViewBag.Vehicles = db.Vehicles.ToList();
+                // Populate vehicles for dropdown (optional selection)
+                ViewData["Vehicles"] = new SelectList(db.Vehicles, "Id", "Title");
             }
 
+            // Pass service types for dropdown if it's a service appointment
+            if (appointment.AppointmentType == "Service")
+            {
+                ViewData["ServiceTypes"] = new SelectList(GetServiceTypes(), appointment.ServiceType);
+            }
+
+            ViewData["AppointmentType"] = appointment.AppointmentType;
             return View(appointment);
         }
 
-
         // POST: Appointments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        // Update your Create method to send confirmation email
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "AppointmentId,VehicleId,AppointmentType,AppointmentDate,Notes")] Appointment appointment)
+        public async Task<ActionResult> Create(Appointment appointment) // Changed to async Task
         {
             if (appointment.AppointmentDate < DateTime.Now)
             {
@@ -152,23 +209,25 @@ namespace WestendMotors.Controllers
             if (Session["UserId"] == null)
             {
                 ModelState.AddModelError("", "You must be logged in to book an appointment.");
-                ViewBag.VehicleTitle = db.Vehicles.Find(appointment.VehicleId)?.Title ?? "Vehicle";
                 return View(appointment);
             }
 
             var userId = Convert.ToInt32(Session["UserId"]);
 
-            // Check for existing pending appointment for this user and vehicle
-            var existingAppointment = db.Appointments
-                .Any(a => a.UserId == userId &&
-                         a.VehicleId == appointment.VehicleId &&
-                         a.Status == "Pending");
-
-            if (existingAppointment)
+            // Check for existing pending appointment
+            if (appointment.VehicleId.HasValue)
             {
-                ModelState.AddModelError("", "You already have a pending appointment for this vehicle. Please wait for it to be processed or contact support.");
-                ViewBag.VehicleTitle = db.Vehicles.Find(appointment.VehicleId)?.Title ?? "Vehicle";
-                return View(appointment);
+                var existingAppointment = db.Appointments
+                    .Any(a => a.UserId == userId &&
+                             a.VehicleId == appointment.VehicleId &&
+                             a.AppointmentType == appointment.AppointmentType &&
+                             a.Status == "Pending");
+
+                if (existingAppointment)
+                {
+                    ModelState.AddModelError("", $"You already have a pending {appointment.AppointmentType.ToLower()} appointment for this vehicle.");
+                    return View(appointment);
+                }
             }
 
             if (ModelState.IsValid)
@@ -179,17 +238,78 @@ namespace WestendMotors.Controllers
                 db.Appointments.Add(appointment);
                 db.SaveChanges();
 
-                return RedirectToAction("Confirmation");
+                // Load customer and vehicle details for email
+                var appointmentWithDetails = db.Appointments
+                    .Include(a => a.Customer)
+                    .Include(a => a.Vehicle)
+                    .FirstOrDefault(a => a.AppointmentId == appointment.AppointmentId);
+
+                // Send confirmation email
+                if (appointmentWithDetails != null)
+                {
+                    await _emailService.SendAppointmentConfirmationAsync(appointmentWithDetails);
+                }
+
+                return RedirectToAction("Confirmation", new { id = appointment.AppointmentId });
             }
 
-            ViewBag.VehicleTitle = db.Vehicles.Find(appointment.VehicleId)?.Title ?? "Vehicle";
+            // Repopulate view data if validation fails
+            if (appointment.VehicleId.HasValue)
+            {
+                var vehicle = db.Vehicles.Find(appointment.VehicleId.Value);
+                ViewBag.VehicleTitle = vehicle?.Title;
+            }
+            else
+            {
+                ViewBag.Vehicles = new SelectList(db.Vehicles, "Id", "Title", appointment.VehicleId);
+            }
+
+            if (appointment.AppointmentType == "Service")
+            {
+                ViewBag.ServiceTypes = new SelectList(GetServiceTypes(), appointment.ServiceType);
+            }
+
+            ViewBag.AppointmentType = appointment.AppointmentType;
             return View(appointment);
         }
 
-
-        public ActionResult Confirmation()
+        // Helper method for service types
+        private List<string> GetServiceTypes()
         {
-            return View();
+            return new List<string>
+    {
+        "Oil Change",
+        "Tire Rotation",
+        "Brake Service",
+        "Engine Tune-up",
+        "Transmission Service",
+        "Coolant Flush",
+        "Air Filter Replacement",
+        "Battery Replacement",
+        "Wheel Alignment",
+        "Scheduled Maintenance",
+        "Electrical System",
+        "Suspension Service",
+        "Exhaust System",
+        "AC Service",
+        "Other"
+    };
+        }
+
+
+        public ActionResult Confirmation(int id)
+        {
+            var appointment = db.Appointments
+                .Include(a => a.Vehicle)
+                .FirstOrDefault(a => a.AppointmentId == id);
+
+            if (appointment == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.AppointmentType = appointment.AppointmentType;
+            return View(appointment);
         }
 
 
@@ -281,16 +401,22 @@ namespace WestendMotors.Controllers
             return RedirectToAction("Details", new { id = id });
         }*/
 
-        [HttpPost]
+        // Update your UpdateStatus method
+        /*[HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult UpdateStatus(int id, string status, string adminNotes, DateTime? rescheduledDate)
+        public async Task<ActionResult> UpdateStatus(int id, string status, string adminNotes, DateTime? rescheduledDate)
         {
-            var appointment = db.Appointments.Find(id);
+            var appointment = db.Appointments
+                .Include(a => a.Customer)
+                .Include(a => a.Vehicle)
+                .FirstOrDefault(a => a.AppointmentId == id);
+
             if (appointment == null)
             {
                 return HttpNotFound();
             }
 
+            var oldStatus = appointment.Status;
             appointment.Status = status;
             appointment.AdminNotes = adminNotes;
 
@@ -301,19 +427,76 @@ namespace WestendMotors.Controllers
 
             db.SaveChanges();
 
+            // Send status update email
+            await _emailService.SendAppointmentStatusUpdateAsync(appointment, oldStatus, adminNotes);
+
+            return RedirectToAction("Details", new { id = id });
+        }*/
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> UpdateStatus(int id, string status, string adminNotes, DateTime? rescheduledDate, int? assignStaffId = null)
+        {
+            var appointment = db.Appointments
+                .Include(a => a.Customer)
+                .Include(a => a.Vehicle)
+                .Include(a => a.AssignedStaff)
+                .FirstOrDefault(a => a.AppointmentId == id);
+
+            if (appointment == null)
+            {
+                return HttpNotFound();
+            }
+
+            var oldStatus = appointment.Status;
+            appointment.Status = status;
+            appointment.AdminNotes = adminNotes;
+
+            // Assign staff if provided
+            if (assignStaffId.HasValue)
+            {
+                var staff = db.Users.Find(assignStaffId.Value);
+                if (staff != null)
+                {
+                    appointment.AssignedStaffId = assignStaffId.Value;
+                    appointment.AssignedDate = DateTime.Now;
+                }
+            }
+
+            if (status == "Postponed" && rescheduledDate.HasValue)
+            {
+                appointment.RescheduledDate = rescheduledDate;
+            }
+
+            db.SaveChanges();
+
+            // Send status update email
+            await _emailService.SendAppointmentStatusUpdateAsync(appointment, oldStatus, adminNotes);
+
+            // Send staff assignment email if staff was assigned
+            if (assignStaffId.HasValue && appointment.AssignedStaff != null)
+            {
+                await _emailService.SendAppointmentStaffAssignmentAsync(appointment, appointment.AssignedStaff);
+                await _emailService.SendInternalStaffAssignmentNotificationAsync(appointment, appointment.AssignedStaff);
+            }
+
             return RedirectToAction("Details", new { id = id });
         }
 
+        // Update your Reschedule method
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Reschedule(int id, DateTime newDate, string rescheduleNotes)
+        public async Task<ActionResult> Reschedule(int id, DateTime newDate, string rescheduleNotes)
         {
             if (Session["UserId"] == null)
             {
                 return RedirectToAction("Login", "Users");
             }
 
-            var appointment = db.Appointments.Find(id);
+            var appointment = db.Appointments
+                .Include(a => a.Customer)
+                .Include(a => a.Vehicle)
+                .FirstOrDefault(a => a.AppointmentId == id);
+
             if (appointment == null)
             {
                 return HttpNotFound();
@@ -350,8 +533,82 @@ namespace WestendMotors.Controllers
             db.Appointments.Add(rescheduledAppointment);
             db.SaveChanges();
 
-            TempData["Success"] = "Reschedule request submitted successfully.";
+            // Send reschedule request email
+            await _emailService.SendRescheduleRequestAsync(appointment, rescheduledAppointment, rescheduleNotes);
+
+            TempData["Success"] = "Reschedule request submitted successfully. You will receive a confirmation email shortly.";
             return RedirectToAction("Details", new { id = rescheduledAppointment.AppointmentId });
+        }
+
+        // Add method to assign staff to appointment
+        /* [HttpPost]
+         [ValidateAntiForgeryToken]
+         public async Task<ActionResult> AssignStaffToAppointment(int appointmentId, int staffId)
+         {
+             var appointment = db.Appointments
+                 .Include(a => a.Customer)
+                 .Include(a => a.AssignedStaff)
+                 .Include(a => a.Vehicle)
+                 .FirstOrDefault(a => a.AppointmentId == appointmentId);
+
+             var staff = db.Users.Find(staffId);
+
+             if (appointment == null || staff == null)
+             {
+                 return HttpNotFound();
+             }
+
+             appointment.AssignedStaffId = staffId;
+             appointment.AssignedDate = DateTime.Now;
+             db.SaveChanges();
+
+             // Send assignment email
+             //await _emailService.SendAppointmentStaffAssignmentAsync(appointment, staff);
+
+             if (Request.IsAjaxRequest())
+             {
+                 return Json(new { success = true, message = $"Appointment assigned to {staff.FullName} successfully." });
+             }
+
+             TempData["Success"] = $"Appointment assigned to {staff.FullName} successfully. Notification email sent.";
+             return RedirectToAction("Details", new { id = appointmentId });
+
+             //TempData["Success"] = $"Appointment assigned to {staff.FullName} successfully. Notification email sent.";
+             //return RedirectToAction("Details", new { id = appointmentId });
+         }*/
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AssignStaffToAppointment(int appointmentId, int staffId)
+        {
+            var appointment = db.Appointments
+                .Include(a => a.Customer)
+                .Include(a => a.AssignedStaff)
+                .Include(a => a.Vehicle)
+                .FirstOrDefault(a => a.AppointmentId == appointmentId);
+
+            var staff = db.Users.Find(staffId);
+
+            if (appointment == null || staff == null)
+            {
+                return HttpNotFound();
+            }
+
+            appointment.AssignedStaffId = staffId;
+            appointment.AssignedDate = DateTime.Now;
+            db.SaveChanges();
+
+            // Send assignment emails (UNCOMMENT AND FIX THIS)
+            await _emailService.SendAppointmentStaffAssignmentAsync(appointment, staff);
+            await _emailService.SendInternalStaffAssignmentNotificationAsync(appointment, staff);
+
+            if (Request.IsAjaxRequest())
+            {
+                return Json(new { success = true, message = $"Appointment assigned to {staff.FullName} successfully." });
+            }
+
+            TempData["Success"] = $"Appointment assigned to {staff.FullName} successfully. Notification email sent.";
+            return RedirectToAction("Details", new { id = appointmentId });
         }
 
     }

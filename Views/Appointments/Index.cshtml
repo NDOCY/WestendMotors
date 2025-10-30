@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<WestendMotors.Models.Appointment>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Appointments";
     var role = Session["Role"] as string;
 
     if (role == "Admin")
@@ -14,60 +14,730 @@
     }
 }
 
-<h2>Index</h2>
+<div class="container mt-4">
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="header-content">
+                <h1 class="mb-1">Appointments</h1>
+                <p class="text-muted mb-0">Manage your scheduled appointments</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            @Html.ActionLink("Book New Appointment", "Create", "Appointments",
+                new { appointmentType = "Consultation" },
+                new { @class = "btn btn-primary btn-lg" })
+        </div>
+    </div>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Customer.FullName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Vehicle.Title)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.AppointmentType)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.AppointmentDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Status)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Notes)
-        </th>
-        <th></th>
-    </tr>
+    <div class="appointments-card">
+        <div class="card-header">
+            <h5><i class="fas fa-list me-2"></i>All Appointments</h5>
+            <p class="mb-0 text-muted">@Model.Count() appointment(s) found</p>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-container">
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user me-1"></i>Customer</th>
+                                <th><i class="fas fa-car me-1"></i>Vehicle</th>
+                                <th><i class="fas fa-tag me-1"></i>Type</th>
+                                <th><i class="fas fa-clock me-1"></i>Date & Time</th>
+                                <th><i class="fas fa-info-circle me-1"></i>Status</th>
+                                <th><i class="fas fa-sticky-note me-1"></i>Notes</th>
+                                <th><i class="fas fa-cogs me-1"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="appointment-row @GetStatusRowClass(item.Status)">
+                                    <td>
+                                        <div class="customer-info">
+                                            @if (item.Customer != null)
+                                            {
+                                                <span class="customer-name">@item.Customer.FullName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="vehicle-info">
+                                            @if (item.Vehicle != null)
+                                            {
+                                                <span class="vehicle-title">@item.Vehicle.Title</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No Vehicle</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="appointment-type-badge @GetAppointmentTypeBadgeClass(item.AppointmentType)">
+                                            @item.AppointmentType
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="datetime-info">
+                                            <div class="date">@item.AppointmentDate.ToString("MMM dd, yyyy")</div>
+                                            <div class="time">@item.AppointmentDate.ToString("h:mm tt")</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-@item.Status.ToLower()">
+                                            @item.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="notes-cell">
+                                            @if (!string.IsNullOrEmpty(item.Notes))
+                                            {
+                                                <span class="notes-preview" title="@item.Notes">
+                                                    @(item.Notes.Length > 50 ? item.Notes.Substring(0, 50) + "..." : item.Notes)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No notes</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            @Html.ActionLink("View", "Details", new { id = item.AppointmentId },
+                                                new { @class = "btn-action btn-info", title = "View Details" })
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Customer.FullName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Vehicle.Title)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.AppointmentType)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.AppointmentDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Status)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Notes)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AppointmentId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AppointmentId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AppointmentId })
-        </td>
-    </tr>
+                                            @if (role == "Admin")
+                                            {
+                                                @Html.ActionLink("Edit", "Edit", new { id = item.AppointmentId },
+                                                    new { @class = "btn-action btn-warning", title = "Edit" })
+                                                @Html.ActionLink("Delete", "Delete", new { id = item.AppointmentId },
+                                                    new { @class = "btn-action btn-danger", title = "Delete" })
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h4>No Appointments Found</h4>
+                    <p class="text-muted">You haven't scheduled any appointments yet.</p>
+                    @Html.ActionLink("Book Your First Appointment", "Create", "Appointments",
+                        new { appointmentType = "Consultation" },
+                        new { @class = "btn btn-primary btn-lg" })
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    // Helper method to get CSS class based on status - COMPATIBLE VERSION
+    public string GetStatusRowClass(string status)
+    {
+        if (string.IsNullOrEmpty(status))
+            return "";
+
+        switch (status.ToLower())
+        {
+            case "completed":
+                return "row-completed";
+            case "cancelled":
+                return "row-cancelled";
+            case "confirmed":
+                return "row-confirmed";
+            case "postponed":
+                return "row-postponed";
+            default:
+                return "";
+        }
+    }
+
+    // Helper method to get badge class based on appointment type - COMPATIBLE VERSION
+    public string GetAppointmentTypeBadgeClass(string appointmentType)
+    {
+        if (string.IsNullOrEmpty(appointmentType))
+            return "type-default";
+
+        switch (appointmentType.ToLower())
+        {
+            case "test drive":
+                return "type-testdrive";
+            case "service":
+                return "type-service";
+            case "consultation":
+                return "type-consultation";
+            case "maintenance":
+                return "type-maintenance";
+            default:
+                return "type-default";
+        }
+    }
 }
 
-</table>
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .page-header .d-flex {
+                flex: 1;
+            }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header-content h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-actions {
+            margin-left: 2rem;
+        }
+
+        /* Appointments Card */
+        .appointments-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+            .card-header h5 {
+                margin: 0 0 0.5rem 0;
+                font-weight: 600;
+                color: var(--text-dark);
+                display: flex;
+                align-items: center;
+                font-size: 1.25rem;
+            }
+
+        .card-body {
+            padding: 0;
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .appointments-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: collapse;
+        }
+
+            .appointments-table thead th {
+                background: #f8f9fa;
+                border: none;
+                padding: 1.25rem 1rem;
+                font-weight: 600;
+                color: var(--text-dark);
+                font-size: 0.9rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 2px solid var(--border-color);
+                white-space: nowrap;
+            }
+
+                .appointments-table thead th i {
+                    color: var(--accent-color);
+                    margin-right: 0.25rem;
+                }
+
+            .appointments-table tbody td {
+                padding: 1rem;
+                border: none;
+                border-bottom: 1px solid #f1f3f4;
+                vertical-align: middle;
+            }
+
+        .appointment-row {
+            transition: all 0.2s ease;
+        }
+
+            .appointment-row:hover {
+                background-color: rgba(52, 152, 219, 0.05);
+            }
+
+        /* Row Status Classes */
+        .row-completed {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .row-cancelled {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .row-confirmed {
+            border-left: 4px solid var(--info-color);
+        }
+
+        .row-postponed {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        /* Customer and Vehicle Info */
+        .customer-info, .vehicle-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .customer-name, .vehicle-title {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* DateTime Display */
+        .datetime-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+            .datetime-info .date {
+                font-weight: 600;
+                color: var(--text-dark);
+                font-size: 0.9rem;
+            }
+
+            .datetime-info .time {
+                font-size: 0.8rem;
+                color: var(--text-muted);
+            }
+
+        /* Appointment Type Badges */
+        .appointment-type-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .type-testdrive {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--accent-color);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .type-service {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(39, 174, 96, 0.3);
+        }
+
+        .type-consultation {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info-color);
+            border: 1px solid rgba(23, 162, 184, 0.3);
+        }
+
+        .type-maintenance {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+
+        .type-default {
+            background: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.3);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning-color);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+
+        .status-confirmed {
+            background: rgba(23, 162, 184, 0.15);
+            color: var(--info-color);
+            border: 1px solid rgba(23, 162, 184, 0.3);
+        }
+
+        .status-completed {
+            background: rgba(39, 174, 96, 0.15);
+            color: var(--success-color);
+            border: 1px solid rgba(39, 174, 96, 0.3);
+        }
+
+        .status-cancelled {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger-color);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .status-postponed {
+            background: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.3);
+        }
+
+        /* Notes Cell */
+        .notes-cell {
+            max-width: 200px;
+        }
+
+        .notes-preview {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: help;
+            font-size: 0.9rem;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-start;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+        }
+
+            .btn-action::before {
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+            }
+
+        .btn-info {
+            background: var(--info-color);
+            color: white;
+        }
+
+            .btn-info::before {
+                content: '\f06e'; /* fa-eye */
+            }
+
+            .btn-info:hover {
+                background: #138496;
+                color: white;
+                text-decoration: none;
+                transform: scale(1.05);
+            }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+            .btn-warning::before {
+                content: '\f044'; /* fa-edit */
+            }
+
+            .btn-warning:hover {
+                background: #e0a800;
+                color: white;
+                text-decoration: none;
+                transform: scale(1.05);
+            }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+            .btn-danger::before {
+                content: '\f2ed'; /* fa-trash */
+            }
+
+            .btn-danger:hover {
+                background: #c82333;
+                color: white;
+                text-decoration: none;
+                transform: scale(1.05);
+            }
+
+        /* Button Styling */
+        .btn {
+            font-weight: 600;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background: #2980b9;
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-hover);
+                color: white;
+                text-decoration: none;
+            }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            margin-bottom: 1.5rem;
+        }
+
+            .empty-icon i {
+                font-size: 4rem;
+                color: var(--text-muted);
+            }
+
+        .empty-state h4 {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 1200px) {
+            .appointments-table {
+                font-size: 0.9rem;
+            }
+
+                .appointments-table th,
+                .appointments-table td {
+                    padding: 0.875rem 0.75rem;
+                }
+        }
+
+        @@media (max-width: 992px) {
+            .page-header {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+                .page-header .d-flex {
+                    justify-content: center;
+                }
+
+            .header-actions {
+                margin-left: 0;
+            }
+
+            .appointments-table {
+                font-size: 0.85rem;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+            }
+
+                .page-header .d-flex {
+                    flex-direction: column;
+                    align-items: center;
+                }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .card-header,
+            .empty-state {
+                padding: 1.5rem;
+            }
+
+            .appointments-table th,
+            .appointments-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .notes-cell {
+                max-width: 120px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .btn-action {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .appointments-table {
+                font-size: 0.8rem;
+            }
+
+            .datetime-info,
+            .customer-info,
+            .vehicle-info {
+                font-size: 0.85rem;
+            }
+
+            .status-badge,
+            .appointment-type-badge {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.7rem;
+            }
+
+            .empty-state {
+                padding: 3rem 1rem;
+            }
+
+            .empty-icon i {
+                font-size: 3rem;
+            }
+        }
+
+        /* Animation for page load */
+        .appointments-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus,
+        .btn-action:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Hover effects for better UX */
+        .notes-preview:hover {
+            color: var(--accent-color);
+        }
+
+        /* Loading states */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+            .btn:disabled:hover {
+                transform: none !important;
+            }
+    </style>
+}

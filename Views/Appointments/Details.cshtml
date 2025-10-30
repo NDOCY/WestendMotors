@@ -1,6 +1,6 @@
 ﻿@model WestendMotors.Models.Appointment
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Appointment Details";
     var role = Session["Role"] as string;
     var userId = Session["UserId"] != null ? Convert.ToInt32(Session["UserId"]) : 0;
 
@@ -14,97 +14,1204 @@
     }
 }
 
-<h2>Appointment Details</h2>
+<div class="container mt-4">
 
-<div>
-    <strong>Vehicle:</strong> @Model.Vehicle?.Title <br />
-    <strong>Customer:</strong> @Model.Customer?.FullName <br />
-    <strong>Appointment Date:</strong> @Model.AppointmentDate.ToString("f") <br />
-    <strong>Type:</strong> @Model.AppointmentType <br />
-    <strong>Status:</strong> @Model.Status <br />
 
-    @if (!string.IsNullOrEmpty(Model.Notes))
-    {
-        <strong>Customer Notes:</strong> @Model.Notes <br />
-    }
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <h1 class="mb-1">Appointment Details</h1>
+                <p class="text-muted mb-0">View and manage appointment information</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="status-indicator status-@((Model.Status ?? "Unknown").ToLower())">
+                <i class="fas fa-circle me-2"></i>@(Model.Status ?? "Unknown")
+            </div>
+        </div>
+    </div>
 
-    @if (!string.IsNullOrEmpty(Model.AdminNotes))
-    {
-        <strong>Admin Notes:</strong> @Model.AdminNotes <br />
-    }
+    <div class="row">
+        <!-- Main Details Card -->
+        <div class="col-lg-8 mb-4">
+            <div class="details-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Appointment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="details-grid">
+                        <!-- Vehicle Information -->
+                        <div class="detail-section">
+                            <div class="detail-group">
+                                <div class="detail-label">
+                                    <i class="fas fa-car me-2"></i>Vehicle
+                                </div>
+                                <div class="detail-value vehicle-info">
+                                    @if (Model.Vehicle != null)
+                                    {
+                                        <div class="vehicle-title">@Model.Vehicle.Title</div>
+                                        if (Model.Vehicle.Images != null && Model.Vehicle.Images.Any())
+                                        {
+                                            <div class="vehicle-image-preview">
+                                                <img src="@Url.Content(Model.Vehicle.Images.First().ImagePath)"
+                                                     alt="@Model.Vehicle.Title" class="vehicle-thumbnail" />
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Vehicle information not available</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
 
-    @if (Model.RescheduledDate.HasValue)
-    {
-        <strong>Rescheduled Date:</strong> @Model.RescheduledDate.Value.ToString("f") <br />
-    }
+                        <!-- Customer Information -->
+                        <div class="detail-section">
+                            <div class="detail-group">
+                                <div class="detail-label">
+                                    <i class="fas fa-user me-2"></i>Customer
+                                </div>
+                                <div class="detail-value">
+                                    @if (Model.Customer != null)
+                                    {
+                                        <div class="customer-name">@Model.Customer.FullName</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Customer information not available</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date and Time -->
+                        <div class="detail-section">
+                            <div class="detail-group">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar-alt me-2"></i>Appointment Date
+                                </div>
+                                <div class="detail-value">
+                                    <div class="appointment-datetime">
+                                        <div class="date-display">@Model.AppointmentDate.ToString("dddd, MMMM dd, yyyy")</div>
+                                        <div class="time-display">@Model.AppointmentDate.ToString("hh:mm tt")</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Appointment Type -->
+                        <div class="detail-section">
+                            <div class="detail-group">
+                                <div class="detail-label">
+                                    <i class="fas fa-tag me-2"></i>Appointment Type
+                                </div>
+                                <div class="detail-value">
+                                    <span class="type-badge">@Model.AppointmentType</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rescheduled Date (if applicable) -->
+                        @if (Model.RescheduledDate.HasValue)
+                        {
+                            <div class="detail-section">
+                                <div class="detail-group">
+                                    <div class="detail-label">
+                                        <i class="fas fa-calendar-times me-2"></i>Rescheduled Date
+                                    </div>
+                                    <div class="detail-value">
+                                        <div class="appointment-datetime rescheduled">
+                                            <div class="date-display">@Model.RescheduledDate.Value.ToString("dddd, MMMM dd, yyyy")</div>
+                                            <div class="time-display">@Model.RescheduledDate.Value.ToString("hh:mm tt")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Notes Section -->
+                    @if (!string.IsNullOrEmpty(Model.Notes) || !string.IsNullOrEmpty(Model.AdminNotes))
+                    {
+                        <div class="notes-section">
+                            <h6><i class="fas fa-sticky-note me-2"></i>Notes</h6>
+
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <div class="note-item customer-note">
+                                    <div class="note-header">
+                                        <i class="fas fa-user me-2"></i>Customer Notes
+                                    </div>
+                                    <div class="note-content">@Model.Notes</div>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.AdminNotes))
+                            {
+                                <div class="note-item admin-note">
+                                    <div class="note-header">
+                                        <i class="fas fa-user-tie me-2"></i>Admin Notes
+                                    </div>
+                                    <div class="note-content">@Model.AdminNotes</div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Add Staff Assignment Section -->
+            <div class="details-card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-tie me-2"></i>Assigned Representative</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.AssignedStaff != null)
+                    {
+                        <div class="assigned-staff-info">
+                            <div class="staff-card">
+                                <div class="staff-avatar">
+                                    @Model.AssignedStaff.FullName.Substring(0, 1).ToUpper()
+                                </div>
+                                <div class="staff-details">
+                                    <h6>@Model.AssignedStaff.FullName</h6>
+                                    <p class="text-muted mb-1">@(Model.AssignedStaff.Title ?? "Representative")</p>
+                                    <p class="mb-1">
+                                        <i class="fas fa-envelope me-2"></i>
+                                        <a href="mailto:@Model.AssignedStaff.Email">@Model.AssignedStaff.Email</a>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(Model.AssignedStaff.Phone))
+                                    {
+                                        <p class="mb-0">
+                                            <i class="fas fa-phone me-2"></i>
+                                            <a href="tel:@Model.AssignedStaff.Phone">@Model.AssignedStaff.Phone</a>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                            <small class="text-muted">Assigned on: @Model.AssignedDate?.ToString("MMM dd, yyyy")</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No representative assigned to this appointment.
+                        </div>
+                    }
+
+                    <!-- Staff Assignment Form (Admin only) -->
+                    @if (role == "Admin")
+                    {
+                        using (Html.BeginForm("AssignStaffToAppointment", "Appointments", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("appointmentId", Model.AppointmentId)
+
+                            <div class="row mt-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">Assign Representative:</label>
+                                    @Html.DropDownList("staffId", (SelectList)ViewBag.AvailableStaff,
+                                        "-- Select Representative --",
+                                        new { @class = "form-control", required = "required" })
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-user-plus me-2"></i>Assign
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Panel -->
+        <div class="col-lg-4 mb-4">
+            @if (role == "Admin")
+            {
+                <!-- Admin Actions -->
+                <div class="action-card admin-actions">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cogs me-2"></i>Admin Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("UpdateStatus", "Appointments", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("id", Model.AppointmentId)
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-flag me-2"></i>Update Status
+                                </label>
+                                @Html.DropDownList("status", new SelectList(
+                                    new[] { "Pending", "Confirmed", "Completed", "Cancelled", "Postponed" },
+                                    Model.Status
+                                ), new { @class = "form-control", id = "statusDropdown" })
+                            </div>
+
+                            <!-- Add Staff Assignment Dropdown -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-user-tie me-2"></i>Assign Staff (Optional)
+                                </label>
+                                @Html.DropDownList("assignStaffId", (SelectList)ViewBag.AvailableStaff,
+                                    "-- Optional: Assign Staff --",
+                                    new { @class = "form-control" })
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-edit me-2"></i>Admin Notes
+                                </label>
+                                <textarea name="adminNotes" class="form-control" rows="4"
+                                          placeholder="Add notes about status change..." required>@Model.AdminNotes</textarea>
+                                <small class="form-text">Required for status changes</small>
+                            </div>
+
+                            <div id="rescheduleSection" class="form-group" style="display:none;">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar me-2"></i>Rescheduled Date
+                                </label>
+                                <input type="datetime-local" name="rescheduledDate" class="form-control"
+                                       value="@(Model.RescheduledDate?.ToString("yyyy-MM-ddTHH:mm"))" />
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>Update Status
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (role == "Customer" && Model.UserId == userId && Model.Status == "Pending")
+            {
+                <!-- Customer Actions -->
+                <div class="action-card customer-actions">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calendar-times me-2"></i>Reschedule Appointment</h5>
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("Reschedule", "Appointments", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("id", Model.AppointmentId)
+
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-calendar me-2"></i>New Appointment Date
+                                </label>
+                                <input type="datetime-local" name="newDate" class="form-control"
+                                       value="@Model.AppointmentDate.ToString("yyyy-MM-ddTHH:mm")"
+                                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-comment me-2"></i>Reason for Rescheduling
+                                </label>
+                                <textarea name="rescheduleNotes" class="form-control" rows="3"
+                                          placeholder="Please provide a reason for rescheduling..." required></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="fas fa-calendar-times me-2"></i>Request Reschedule
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="quick-action-buttons">
+                        @Html.ActionLink("Back to Appointments", "Index", "Appointments", null,
+                            new { @class = "btn btn-outline-secondary" })
+
+                        @if (Model.Vehicle != null)
+                        {
+                            @Html.ActionLink("View Vehicle", "Details", "Vehicles", new { id = Model.Vehicle.Id },
+                                new { @class = "btn btn-outline-primary" })
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<hr />
-
-@if (role == "Admin")
-{
-    <h4>Update Status</h4>
-    using (Html.BeginForm("UpdateStatus", "Appointments", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-        @Html.Hidden("id", Model.AppointmentId)
-
-        <div class="form-group">
-            <label for="status">Status:</label>
-            @Html.DropDownList("status", new SelectList(
-                new[] { "Pending", "Confirmed", "Completed", "Cancelled", "Postponed" },
-                Model.Status
-            ), new { @class = "form-control", id = "statusDropdown" })
-        </div>
-
-        <div class="form-group">
-            <label for="adminNotes">Admin Notes (required for status changes):</label>
-            <textarea name="adminNotes" class="form-control" rows="3" required>@Model.AdminNotes</textarea>
-        </div>
-
-        <div id="rescheduleSection" class="form-group" style="display:none;">
-            <label for="rescheduledDate">Rescheduled Date:</label>
-            <input type="datetime-local" name="rescheduledDate" class="form-control"
-                   value="@(Model.RescheduledDate?.ToString("yyyy-MM-ddTHH:mm"))" />
-        </div>
-
-        <button type="submit" class="btn btn-primary">Save Status</button>
-    }
-
+@section Scripts {
     <script>
-        document.getElementById('statusDropdown').addEventListener('change', function() {
-            var rescheduleSection = document.getElementById('rescheduleSection');
-            rescheduleSection.style.display = this.value === 'Postponed' ? 'block' : 'none';
+        $(document).ready(function () {
+            // Status dropdown change handler
+            $('#statusDropdown').on('change', function () {
+                var rescheduleSection = $('#rescheduleSection');
+                if (this.value === 'Postponed') {
+                    rescheduleSection.slideDown(200);
+                } else {
+                    rescheduleSection.slideUp(200);
+                }
+            });
+
+            // Initialize on page load
+            var statusDropdown = $('#statusDropdown');
+            var rescheduleSection = $('#rescheduleSection');
+            if (statusDropdown.val() === 'Postponed') {
+                rescheduleSection.show();
+            }
+
+            // Form validation enhancement
+            $('form').on('submit', function (e) {
+                const requiredFields = $(this).find('[required]');
+                let hasErrors = false;
+
+                requiredFields.each(function () {
+                    if (!$(this).val()) {
+                        $(this).addClass('error');
+                        hasErrors = true;
+                    } else {
+                        $(this).removeClass('error');
+                    }
+                });
+
+                if (hasErrors) {
+                    e.preventDefault();
+                    $('.error').first().focus();
+                }
+            });
         });
 
-        // Trigger on page load in case status is already "Postponed"
-        document.addEventListener('DOMContentLoaded', function() {
-            var statusDropdown = document.getElementById('statusDropdown');
-            var rescheduleSection = document.getElementById('rescheduleSection');
-            rescheduleSection.style.display = statusDropdown.value === 'Postponed' ? 'block' : 'none';
+
+        // In your _Layout.cshtml or specific view
+        $(document).ready(function () {
+            // Handle staff assignment form submissions
+            $('form[action*="AssignStaff"]').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Show success message and reload page
+                            showNotification(response.message, 'success');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                });
+            });
+
+            // Notification function
+            function showNotification(message, type) {
+                var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+                var notification = $(
+                    '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
+                    '<i class="fas ' + icon + ' me-2"></i>' + message +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                    '</div>'
+                );
+
+                $('.container').prepend(notification);
+
+                // Auto-dismiss after 5 seconds
+                setTimeout(function () {
+                    notification.alert('close');
+                }, 5000);
+            }
         });
     </script>
+
+
 }
-else if (role == "Customer" && Model.UserId == userId && Model.Status == "Pending")
-{
-    <h4>Reschedule Appointment</h4>
-    using (Html.BeginForm("Reschedule", "Appointments", FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-        @Html.Hidden("id", Model.AppointmentId)
 
-        <div class="form-group">
-            <label for="newDate">New Appointment Date:</label>
-            <input type="datetime-local" name="newDate" class="form-control"
-                   value="@Model.AppointmentDate.ToString("yyyy-MM-ddTHH:mm")"
-                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
-        </div>
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
 
-        <div class="form-group">
-            <label for="rescheduleNotes">Reason for rescheduling:</label>
-            <textarea name="rescheduleNotes" class="form-control" rows="3" required></textarea>
-        </div>
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
 
-        <button type="submit" class="btn btn-warning">Request Reschedule</button>
-    }
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            background: rgba(255,255,255,0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .status-indicator.status-pending {
+            background: rgba(52, 152, 219, 0.2);
+            border-color: rgba(52, 152, 219, 0.5);
+        }
+
+        .status-indicator.status-confirmed {
+            background: rgba(39, 174, 96, 0.2);
+            border-color: rgba(39, 174, 96, 0.5);
+        }
+
+        .status-indicator.status-completed {
+            background: rgba(39, 174, 96, 0.3);
+            border-color: rgba(39, 174, 96, 0.6);
+        }
+
+        .status-indicator.status-cancelled {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: rgba(231, 76, 60, 0.5);
+        }
+
+        .status-indicator.status-postponed {
+            background: rgba(243, 156, 18, 0.2);
+            border-color: rgba(243, 156, 18, 0.5);
+        }
+
+        /* Cards */
+        .details-card, .action-card, .quick-actions-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h5, .card-header h6 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .detail-section {
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+        }
+
+        .detail-label {
+            min-width: 150px;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .detail-label i {
+            color: var(--accent-color);
+            margin-right: 0.5rem;
+        }
+
+        .detail-value {
+            flex: 1;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        /* Vehicle Information */
+        .vehicle-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .vehicle-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .vehicle-image-preview {
+            max-width: 200px;
+        }
+
+        .vehicle-thumbnail {
+            width: 100%;
+            max-width: 200px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Customer Information */
+        .customer-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        /* Date and Time Display */
+        .appointment-datetime {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .date-display {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .time-display {
+            font-size: 1rem;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .appointment-datetime.rescheduled {
+            background: rgba(243, 156, 18, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        /* Type Badge */
+        .type-badge {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        .notes-section h6 {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .note-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .note-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .customer-note {
+            border-left-color: var(--success-color);
+            background: rgba(39, 174, 96, 0.05);
+        }
+
+        .admin-note {
+            border-left-color: var(--warning-color);
+            background: rgba(243, 156, 18, 0.05);
+        }
+
+        .note-header {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .note-content {
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger-color);
+            margin-left: 0.25rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-control.error {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .form-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        /* Button Styling */
+        .btn {
+            font-weight: 600;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-outline-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        /* Action Cards */
+        .admin-actions .card-header {
+            background: linear-gradient(135deg, var(--accent-color), #2980b9);
+            color: white;
+        }
+
+        .customer-actions .card-header {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+            color: white;
+        }
+
+        /* Quick Actions */
+        .quick-action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .quick-action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .page-header .d-flex {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .header-actions {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .detail-group {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .detail-label {
+                min-width: auto;
+                margin-bottom: 0.5rem;
+            }
+
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            .vehicle-info {
+                align-items: center;
+                text-align: center;
+            }
+
+            .appointment-datetime {
+                text-align: center;
+            }
+
+            .quick-action-buttons {
+                gap: 0.75rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .page-header {
+                padding: 1.25rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+
+            .status-indicator {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .details-grid {
+                gap: 1.5rem;
+            }
+
+            .detail-section {
+                padding-bottom: 1.5rem;
+            }
+
+            .card-body {
+                padding: 1.25rem;
+            }
+
+            .vehicle-thumbnail {
+                max-width: 150px;
+                height: 90px;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus,
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Animation for page load */
+        .details-card,
+        .action-card,
+        .quick-actions-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading states */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn:disabled:hover {
+            transform: none !important;
+        }
+
+        /* Text utilities */
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .align-items-center {
+            align-items: center;
+        }
+
+        .justify-content-center {
+            justify-content: center;
+        }
+
+        /* Smooth transitions */
+        #rescheduleSection {
+            transition: all 0.2s ease;
+        }
+
+
+        /* Staff Assignment Styles */
+        .assigned-staff-info {
+            border-left: 4px solid #28a745;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+        .staff-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .staff-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2c5aa0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+
+        .staff-details h6 {
+            margin-bottom: 5px;
+            color: #2c5aa0;
+        }
+
+        .staff-details p {
+            margin-bottom: 0.25rem;
+        }
+
+        .staff-details a {
+            color: #495057;
+            text-decoration: none;
+        }
+
+            .staff-details a:hover {
+                color: #2c5aa0;
+                text-decoration: underline;
+            }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.35em 0.65em;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: 0.875em;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-under-review {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-declined {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-scheduled {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        /* Form styles */
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Alert styles */
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .assigned-staff-info {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 15px 0;
+        }
+
+        .staff-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .staff-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .staff-details h6 {
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .type-badge {
+            background-color: #6c757d;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .vehicle-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 2px solid #dee2e6;
+        }
+    </style>
 }

@@ -1,61 +1,71 @@
 ﻿@model IEnumerable<WestendMotors.Models.ServiceRecord>
-
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Service Records";
     var role = Session["Role"] as string;
-
-    if (role == "Admin")
-    {
-        Layout = "~/Views/Shared/_Layout.cshtml";
-    }
-    else
-    {
-        Layout = "~/Views/Shared/_Layout_User.cshtml";
-    }
+    var isCustomer = ViewBag.IsCustomer as bool? ?? false;
 }
 
-<h2>Index</h2>
+<h2>@(isCustomer ? "My Service History" : "Service Records")</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        @*<th>
-            @Html.DisplayNameFor(model => model.Vehicle.Make)
-        </th>*@
-        <th>
-            @Html.DisplayNameFor(model => model.ServiceDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Cost)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        @*<td>
-            @Html.DisplayFor(modelItem => item.Vehicle.Make)
-        </td>*@
-        <td>
-            @Html.DisplayFor(modelItem => item.ServiceDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Cost)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ServiceRecordId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ServiceRecordId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ServiceRecordId })
-        </td>
-    </tr>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
 }
 
+@if (role == "Admin" && !isCustomer)
+{
+    <p>
+        @Html.ActionLink("Create New Service Record", "Create", null, new { @class = "btn btn-success" })
+    </p>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Service Date</th>
+            <th>Vehicle</th>
+            <th>Service Type</th>
+            <th>Description</th>
+            <th>Cost</th>
+            <th>Mileage</th>
+            @if (role == "Admin")
+            {
+                <th>Actions</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ServiceDate.ToString("d")</td>
+                <td>@(item.Vehicle?.Title ?? "N/A")</td>
+                <td>@item.ServiceType</td>
+                <td>@item.Description</td>
+                <td>@(item.Cost.HasValue ? item.Cost.Value.ToString("C") : "N/A")td>
+<td>@(item.Mileage?.ToString("N0") ?? "N/A")</td>
+                @if (role == "Admin")
+                {
+                    <td>
+                        @Html.ActionLink("Details", "Details", new { id = item.ServiceRecordId }) |
+                        @Html.ActionLink("Edit", "Edit", new { id = item.ServiceRecordId }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = item.ServiceRecordId })
+                    </td>
+                }
+                else
+                {
+                    <td>@Html.ActionLink("Details", "Details", new { id = item.ServiceRecordId })</td>
+                }
+            </tr>
+        }
+    </tbody>
 </table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No service records found.
+    </div>
+}

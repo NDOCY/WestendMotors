@@ -19,10 +19,17 @@ namespace WestendMotors.Models
         [ForeignKey("VehicleId")]
         public virtual Vehicle Vehicle { get; set; }
 
-        public string Title { get; set; }
-
         [Required, StringLength(50)]
         public string AppointmentType { get; set; }
+
+        // Service-specific fields
+        [StringLength(100)]
+        public string ServiceType { get; set; } // Oil Change, Brake Service, etc.
+
+        public int? Mileage { get; set; }
+
+        [StringLength(500)]
+        public string ServiceDescription { get; set; }
 
         [Required]
         [DataType(DataType.DateTime)]
@@ -42,6 +49,16 @@ namespace WestendMotors.Models
         [DataType(DataType.DateTime)]
         [Display(Name = "Rescheduled Date")]
         public DateTime? RescheduledDate { get; set; }
+
+        // Add staff assignment
+        public int? AssignedStaffId { get; set; }
+
+        [ForeignKey("AssignedStaffId")]
+        public virtual User AssignedStaff { get; set; }
+
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Assigned Date")]
+        public DateTime? AssignedDate { get; set; }
 
         [Display(Name = "Original Appointment")]
         public int? OriginalAppointmentId { get; set; }

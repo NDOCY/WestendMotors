@@ -21,6 +21,12 @@
             <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
         </div>
     }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        </div>
+    }
 
     <!-- Page Header -->
     <div class="page-header mb-4">
@@ -30,7 +36,7 @@
             </div>
             <div>
                 <h1 class="mb-1">Trade-In Request Details</h1>
-                <p class="text-muted mb-0">Request #@Model.TradeInRequestId - @Model.Customer.FullName</p>
+                <p class="text-muted mb-0">Request #@Model.TradeInRequestId - @(Model.Customer?.FullName ?? "Unknown Customer")</p>
             </div>
         </div>
         <div class="header-actions">
@@ -55,8 +61,12 @@
                         <div class="d-flex gap-2">
                             @Html.ActionLink("Detailed Review", "AdminReview", new { id = Model.TradeInRequestId },
                                 new { @class = "btn btn-warning" })
-                            @Html.ActionLink("Edit Request", "Edit", new { id = Model.TradeInRequestId },
-                                new { @class = "btn btn-info" })
+                            @* @Html.ActionLink("Edit Request", "Edit", new { id = Model.TradeInRequestId },
+        new { @class = "btn btn-info" })
+                            *@
+                            <!-- Convert to Vehicle Button -->
+                            @Html.ActionLink("Convert to Vehicle", "ConvertToVehicle", new { id = Model.TradeInRequestId },
+                                new { @class = "btn btn-success" })
                         </div>
                         <small class="text-muted">Access full detailed review with images and appointment scheduling</small>
                     </div>
@@ -132,7 +142,7 @@
                         </div>
                     }
 
-                    @if (Model.EstimatedValue.  HasValue)
+                    @if (Model.EstimatedValue.HasValue)
                     {
                         <div class="detail-group">
                             <label class="detail-label">
@@ -153,6 +163,74 @@
                     }
                 </div>
             </div>
+
+            <!-- Add Staff Assignment Section -->
+            <div class="details-card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-tie me-2"></i>Assigned Representative</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.AssignedStaff != null)
+                    {
+                        <div class="assigned-staff-info">
+                            <div class="staff-card">
+                                <div class="staff-avatar">
+                                    @Model.AssignedStaff.FullName?.Substring(0, 1).ToUpper()
+                                </div>
+                                <div class="staff-details">
+                                    <h6>@Model.AssignedStaff.FullName</h6>
+                                    <p class="text-muted mb-1">@(Model.AssignedStaff.Title ?? "Trade-In Specialist")</p>
+                                    <p class="mb-1">
+                                        <i class="fas fa-envelope me-2"></i>
+                                        <a href="mailto:@Model.AssignedStaff.Email">@Model.AssignedStaff.Email</a>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(Model.AssignedStaff.Phone))
+                                    {
+                                        <p class="mb-0">
+                                            <i class="fas fa-phone me-2"></i>
+                                            <a href="tel:@Model.AssignedStaff.Phone">@Model.AssignedStaff.Phone</a>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                            <small class="text-muted">Assigned on: @Model.AssignedDate?.ToString("MMM dd, yyyy")</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No representative assigned to this trade-in request.
+                        </div>
+                    }
+
+                    <!-- Staff Assignment Form (Admin only) -->
+                    @if (role == "Admin")
+                    {
+                        using (Html.BeginForm("AssignStaffToTradeIn", "TradeInRequests", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("tradeInId", Model.TradeInRequestId)
+
+                            <div class="row mt-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">Assign Representative:</label>
+                                    @Html.DropDownList("staffId", (SelectList)ViewBag.AvailableStaff,
+                                        "-- Select Representative --",
+                                        new { @class = "form-control", required = "required" })
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-user-plus me-2"></i>Assign
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
 
             <!-- Customer Images Section -->
             @if (Model.Images != null && Model.Images.Any())
@@ -393,7 +471,60 @@
         }, function () {
             $(this).find('.gallery-overlay').fadeOut(200);
         });
+
+
+        // In your _Layout.cshtml or specific view
+        $(document).ready(function () {
+            // Handle staff assignment form submissions
+            $('form[action*="AssignStaff"]').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Show success message and reload page
+                            showNotification(response.message, 'success');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                });
+            });
+
+            // Notification function
+            function showNotification(message, type) {
+                var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+                var notification = $(
+                    '<div class="alert ' + alertClass + ' alert-dismissible fade show" role="alert">' +
+                    '<i class="fas ' + icon + ' me-2"></i>' + message +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                    '</div>'
+                );
+
+                $('.container').prepend(notification);
+
+                // Auto-dismiss after 5 seconds
+                setTimeout(function () {
+                    notification.alert('close');
+                }, 5000);
+            }
+        });
     </script>
+
+
+
 }
 
 @section Styles {
@@ -1006,5 +1137,112 @@
         .d-flex { display: flex; }
         .gap-2 { gap: 0.5rem; }
         .w-100 { width: 100%; }
+
+
+        /* Staff Assignment Styles */
+        .assigned-staff-info {
+            border-left: 4px solid #28a745;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+        .staff-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .staff-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2c5aa0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+
+        .staff-details h6 {
+            margin-bottom: 5px;
+            color: #2c5aa0;
+        }
+
+        .staff-details p {
+            margin-bottom: 0.25rem;
+        }
+
+        .staff-details a {
+            color: #495057;
+            text-decoration: none;
+        }
+
+            .staff-details a:hover {
+                color: #2c5aa0;
+                text-decoration: underline;
+            }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.35em 0.65em;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: 0.875em;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-under-review {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-declined {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-scheduled {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        /* Form styles */
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Alert styles */
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
     </style>
 }

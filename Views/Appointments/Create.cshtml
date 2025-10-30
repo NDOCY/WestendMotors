@@ -11,8 +11,10 @@
         Layout = "~/Views/Shared/_Layout_User.cshtml";
     }
 
-    // Determine if this is a test drive booking or general appointment
-    var isTestDrive = Model.VehicleId > 0;
+    var appointmentType = ViewBag.AppointmentType as string ?? "Appointment";
+    var isTestDrive = appointmentType == "Test Drive";
+    var isService = appointmentType == "Service";
+    var hasVehicle = Model.VehicleId.HasValue;
 }
 
 <div class="container mt-4">
@@ -20,12 +22,27 @@
     <div class="page-header mb-4">
         <div class="d-flex align-items-center">
             <div class="header-icon">
-                <i class="fas fa-calendar-plus"></i>
+                <i class="fas @(isTestDrive ? "fa-car" : isService ? "fa-tools" : "fa-calendar-plus")"></i>
             </div>
             <div>
-                <h1 class="mb-1">@(isTestDrive ? "Book Test Drive" : "Schedule Appointment")</h1>
+                <h1 class="mb-1">
+                    @(isTestDrive ? "Book Test Drive" :
+                      isService ? "Schedule Service" :
+                      "Schedule Appointment")
+                </h1>
                 <p class="text-muted mb-0">
-                    @(isTestDrive ? "Schedule your test drive for " + ViewBag.VehicleTitle : "Book your appointment with Westend Motors")
+                    @if (isTestDrive && ViewBag.VehicleTitle != null)
+                    {
+                        <text>Test drive for @ViewBag.VehicleTitle</text>
+                    }
+                    else if (isService && ViewBag.VehicleTitle != null)
+                    {
+                        <text>Service appointment for @ViewBag.VehicleTitle</text>
+                    }
+                    else
+                    {
+                        <text>Book your appointment with Westend Motors</text>
+                    }
                 </p>
             </div>
         </div>
@@ -36,166 +53,155 @@
         <div class="col-lg-8">
             <div class="appointment-card">
                 <div class="card-header">
-                    <h5>
-                        <i class="fas @(isTestDrive ? "fa-car" : "fa-calendar") me-2"></i>
-                        @(isTestDrive ? ViewBag.VehicleTitle : "Appointment Details")
-                    </h5>
-                    <p class="mb-0 text-muted">
-                        @(isTestDrive ?
-                          "Fill in the details below to schedule your test drive appointment" :
-                          "Select appointment type and provide your details")
-                    </p>
+                    <h5><i class="fas fa-calendar-check me-2"></i>Appointment Details</h5>
+                    <p class="mb-0 text-muted">Please fill in the required information</p>
                 </div>
-
                 <div class="card-body">
-                    @if (ViewBag.Error != null)
-                    {
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.Error
-                        </div>
-                    }
-
                     @using (Html.BeginForm("Create", "Appointments", FormMethod.Post))
                     {
                         @Html.AntiForgeryToken()
 
-                        if (isTestDrive)
+                        <!-- Hidden fields for appointment type -->
+                        @Html.HiddenFor(m => m.AppointmentType)
+                        if (hasVehicle)
                         {
                             @Html.HiddenFor(m => m.VehicleId)
-                            @Html.HiddenFor(m => m.AppointmentType)
                         }
-                        else
-                        {
-                            <!-- Appointment Type Selection -->
-                            <div class="form-group">
-                                <label class="form-label required">
-                                    <i class="fas fa-tasks me-2"></i>Appointment Type
-                                </label>
-                                <div class="appointment-type-selector">
-                                    <div class="appointment-type @(Model.AppointmentType == "Test Drive" ? "selected" : "")" data-type="Test Drive">
-                                        <i class="fas fa-car"></i>
-                                        <h6>Test Drive</h6>
-                                        <p>Experience a vehicle firsthand</p>
-                                    </div>
-                                    <div class="appointment-type @(Model.AppointmentType == "Service" ? "selected" : "")" data-type="Service">
-                                        <i class="fas fa-tools"></i>
-                                        <h6>Vehicle Service</h6>
-                                        <p>Maintenance or repairs</p>
-                                    </div>
-                                    <div class="appointment-type @(Model.AppointmentType == "Consultation" ? "selected" : "")" data-type="Consultation">
-                                        <i class="fas fa-comments"></i>
-                                        <h6>Consultation</h6>
-                                        <p>Discuss vehicle options</p>
-                                    </div>
-                                    <div class="appointment-type @(Model.AppointmentType == "Other" ? "selected" : "")" data-type="Other">
-                                        <i class="fas fa-question-circle"></i>
-                                        <h6>Other</h6>
-                                        <p>Different type of appointment</p>
-                                    </div>
-                                </div>
-                                @Html.HiddenFor(m => m.AppointmentType, new { id = "appointmentType" })
-                                @Html.ValidationMessageFor(m => m.AppointmentType, "", new { @class = "validation-message" })
-                            </div>
 
-                            <!-- Vehicle Selection (for non-test drive appointments) -->
-                            <div class="form-group vehicle-selection">
+                        <!-- Vehicle Selection (only for general appointments) -->
+                        if (!hasVehicle)
+                        {
+                            <div class="form-group">
                                 <label class="form-label">
-                                    <i class="fas fa-car me-2"></i>Vehicle (if applicable)
+                                    <i class="fas fa-car me-2"></i>Vehicle (optional)
                                 </label>
                                 <div class="input-group">
                                     <div class="input-icon">
                                         <i class="fas fa-car"></i>
                                     </div>
                                     @Html.DropDownListFor(m => m.VehicleId,
-                                        new SelectList(ViewBag.Vehicles ?? new List<SelectListItem>(), "Value", "Text"),
+                                        ViewBag.Vehicles as SelectList,
                                         "Select a vehicle (optional)",
                                         new { @class = "form-control" })
                                 </div>
                             </div>
                         }
 
+                        <!-- Service Type (only for service appointments) -->
+                        if (isService)
+                        {
+                            <div class="form-group">
+                                <label class="form-label required">
+                                    <i class="fas fa-tools me-2"></i>Service Type
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-icon">
+                                        <i class="fas fa-tools"></i>
+                                    </div>
+                                    @Html.DropDownListFor(m => m.ServiceType,
+                                        ViewBag.ServiceTypes as SelectList,
+                                        "Select Service Type",
+                                        new { @class = "form-control", required = "required" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ServiceType, "", new { @class = "validation-message" })
+                            </div>
+                        }
+
+                        <!-- Service Description and Mileage (only for service appointments) -->
+                        if (isService)
+                        {
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-sticky-note me-2"></i>Service Description
+                                </label>
+                                @Html.TextAreaFor(m => m.ServiceDescription, new
+                                {
+                                    @class = "form-control",
+                                    rows = 3,
+                                    placeholder = "Describe the service needed..."
+                                })
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Current Mileage
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-icon">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                    </div>
+                                    @Html.TextBoxFor(m => m.Mileage, new
+                                    {
+                                        @class = "form-control",
+                                        type = "number",
+                                        placeholder = "Current vehicle mileage (optional)",
+                                        min = "0"
+                                    })
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Date and Time -->
                         <div class="form-group">
                             <label class="form-label required">
                                 <i class="fas fa-calendar-alt me-2"></i>Preferred Date & Time
                             </label>
                             <div class="input-group">
                                 <div class="input-icon">
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-calendar-alt"></i>
                                 </div>
                                 @Html.TextBoxFor(m => m.AppointmentDate, new
                                 {
                                     @class = "form-control",
                                     type = "datetime-local",
                                     min = DateTime.Now.ToString("yyyy-MM-ddTHH:mm"),
-                                    placeholder = "Select date and time"
+                                    required = "required"
                                 })
                             </div>
                             @Html.ValidationMessageFor(m => m.AppointmentDate, "", new { @class = "validation-message" })
                         </div>
 
+                        <!-- General Notes -->
                         <div class="form-group">
                             <label class="form-label">
-                                <i class="fas fa-sticky-note me-2"></i>Additional Notes
+                                <i class="fas fa-comments me-2"></i>
+                                @(isService ? "Additional Notes" : "Notes")
                             </label>
-                            <div class="input-group">
-                                <div class="input-icon textarea-icon">
-                                    <i class="fas fa-comment"></i>
-                                </div>
-                                @Html.TextAreaFor(m => m.Notes, new
-                                {
-                                    @class = "form-control textarea-input",
-                                    rows = 4,
-                                    placeholder = "Any specific requirements or questions? (Optional)"
-                                })
-                            </div>
-                            @Html.ValidationMessageFor(m => m.Notes, "", new { @class = "validation-message" })
+                            @Html.TextAreaFor(m => m.Notes, new
+                            {
+                                @class = "form-control",
+                                rows = 3,
+                                placeholder = isService ?
+                                    "Any additional information or concerns..." :
+                                    "Any specific requirements or questions..."
+                            })
                         </div>
 
                         <div class="form-actions">
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-calendar-check me-2"></i>
-                                @(isTestDrive ? "Book Test Drive" : "Schedule Appointment")
+                                @(isTestDrive ? "Book Test Drive" :
+                                  isService ? "Schedule Service" :
+                                  "Book Appointment")
                             </button>
-                            @if (isTestDrive)
+
+                            <!-- Back button based on context -->
+                            @if (hasVehicle)
                             {
-                                <a href="@Url.Action("Details", "Vehicles", new { id = Model.VehicleId })" class="btn btn-outline-secondary btn-lg">
-                                    <i class="fas fa-arrow-left me-2"></i>Back to Vehicle
+                                <a href="@Url.Action("VehicleServiceHistory", "ServiceRecords", new { vehicleId = Model.VehicleId })"
+                                   class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Back
                                 </a>
                             }
                             else
                             {
-                                <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-lg">
-                                    <i class="fas fa-arrow-left me-2"></i>Back to Home
+                                <a href="@Url.Action("Index", "Dashboard")"
+                                   class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                                 </a>
                             }
                         </div>
                     }
-                </div>
-            </div>
-
-            <!-- Information Card -->
-            <div class="info-card">
-                <div class="info-header">
-                    <i class="fas fa-info-circle"></i>
-                    <h6>Important Information</h6>
-                </div>
-                <div class="info-content">
-                    <div class="info-item">
-                        <i class="fas fa-id-card"></i>
-                        <span>Please bring a valid driver's license for test drives</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Appointments typically last 30-60 minutes</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-phone"></i>
-                        <span>We'll call to confirm your appointment</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-calendar-times"></i>
-                        <span>Free cancellation up to 24 hours before</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -204,61 +210,274 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Set minimum datetime for appointment input
-            const now = new Date();
-            const minDate = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
-            const formattedMinDate = minDate.toISOString().slice(0, 16);
-            $('#AppointmentDate').attr('min', formattedMinDate);
-
-            // Appointment type selection
-            $('.appointment-type').click(function() {
-                $('.appointment-type').removeClass('selected');
-                $(this).addClass('selected');
-                $('#appointmentType').val($(this).data('type'));
-            });
-
-            // Set initial appointment type if it's a test drive
-            @if (isTestDrive)
-            {
-                <text>$('#appointmentType').val('Test Drive');</text>
-            }
+            var now = new Date();
+            var minDate = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+            $('#AppointmentDate').attr('min', minDate.toISOString().slice(0, 16));
         });
     </script>
 }
 
-<style>
-    /* Appointment Type Selector Styles */
-    .appointment-type-selector {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
 
-    .appointment-type {
-        border: 2px solid #e1e8ed;
-        border-radius: 8px;
-        padding: 1.5rem;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* Appointment Card */
+        .appointment-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h5 {
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger-color);
+            margin-left: 0.25rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            z-index: 5;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-control:has(+ .input-icon),
+        .input-group .form-control {
+            padding-left: 2.75rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-control:hover {
+            border-color: #c1c9d0;
+        }
+
+        /* Textarea specific styling */
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Select dropdown styling */
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            appearance: none;
+        }
+
+        /* Validation Messages */
+        .validation-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .validation-message::before {
+            content: '\f071';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            margin-right: 0.5rem;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-start;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Button Styling */
+        .btn {
+            font-weight: 600;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-outline-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Appointment Type Selector Styles */
+        .appointment-type-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .appointment-type {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+        }
 
         .appointment-type:hover {
-            border-color: #3498db;
+            border-color: var(--accent-color);
             transform: translateY(-3px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            box-shadow: var(--shadow-hover);
         }
 
         .appointment-type.selected {
-            border-color: #3498db;
+            border-color: var(--accent-color);
             background-color: rgba(52, 152, 219, 0.05);
         }
 
         .appointment-type i {
             font-size: 2rem;
-            color: #3498db;
+            color: var(--accent-color);
             margin-bottom: 1rem;
         }
 
@@ -266,18 +485,124 @@
             margin: 0 0 0.5rem 0;
             font-size: 1.1rem;
             font-weight: 600;
+            color: var(--text-dark);
         }
 
         .appointment-type p {
             margin: 0;
             font-size: 0.9rem;
-            color: #7f8c8d;
+            color: var(--text-muted);
         }
 
-    /* Responsive adjustments */
-    @@media (max-width: 768px) {
-        .appointment-type-selector {
-            grid-template-columns: 1fr;
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .page-header .d-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .card-header,
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .appointment-type-selector {
+                grid-template-columns: 1fr;
+            }
         }
-    }
-</style>
+
+        @@media (max-width: 576px) {
+            .form-actions {
+                gap: 0.75rem;
+            }
+
+            .btn-lg {
+                padding: 0.875rem 1.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-header h5 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus,
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Animation for page load */
+        .appointment-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading states */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn:disabled:hover {
+            transform: none !important;
+        }
+
+        /* Input focus enhancements */
+        .form-control:focus + .input-icon {
+            color: var(--accent-color);
+        }
+
+        /* Better spacing for icon labels */
+        .form-label i {
+            margin-right: 0.5rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Error state styling */
+        .form-control.error {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.1);
+        }
+
+        /* Success state styling */
+        .form-control.success {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.1);
+        }
+    </style>
+}

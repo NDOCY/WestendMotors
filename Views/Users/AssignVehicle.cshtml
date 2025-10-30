@@ -1,6 +1,6 @@
 ﻿@model WestendMotors.Models.AssignVehicleViewModel
 @{
-    ViewBag.Title = "Assign";
+    ViewBag.Title = "Assign Vehicle to User";
     var role = Session["Role"] as string;
 
     if (role == "Admin")
@@ -12,44 +12,503 @@
         Layout = "~/Views/Shared/_Layout_User.cshtml";
     }
 }
-<h2>Assign Vehicle to User</h2>
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    @Html.HiddenFor(m => m.UserId)
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.VehicleId, "Vehicle")
-        @Html.DropDownListFor(m => m.VehicleId, (SelectList)ViewBag.Vehicles, "Select Vehicle", new { @class = "form-control" })
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-car"></i>
+            </div>
+            <div>
+                <h2 class="mb-1">Assign Vehicle to @ViewBag.UserName</h2>
+                <p class="text-muted mb-0">Create vehicle assignment and service schedule</p>
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.PurchaseDate)
-        @Html.TextBoxFor(m => m.PurchaseDate, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control" })
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <!-- Main Form Card -->
+    <div class="form-card">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.UserId)
+
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+            <!-- Vehicle Assignment Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5><i class="fas fa-car-side me-2"></i>Vehicle Assignment</h5>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.VehicleId, "Vehicle", htmlAttributes: new { @class = "form-label required" })
+                        <div class="input-group">
+                            <i class="fas fa-car input-icon"></i>
+                            @Html.DropDownListFor(m => m.VehicleId, (SelectList)ViewBag.Vehicles, "Select Vehicle", new { @class = "form-control" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.VehicleId, "", new { @class = "text-danger validation-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.PurchaseDate, htmlAttributes: new { @class = "form-label required" })
+                        <div class="input-group">
+                            <i class="fas fa-calendar input-icon"></i>
+                            @Html.TextBoxFor(m => m.PurchaseDate, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.PurchaseDate, "", new { @class = "text-danger validation-message" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Notes, htmlAttributes: new { @class = "form-label" })
+                    <div class="input-group">
+                        <i class="fas fa-sticky-note input-icon"></i>
+                        @Html.TextAreaFor(m => m.Notes, new { @class = "form-control", rows = 3, placeholder = "Optional notes about this assignment..." })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Notes, "", new { @class = "text-danger validation-message" })
+                </div>
+            </div>
+
+            <!-- Service Schedule Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h5><i class="fas fa-tools me-2"></i>Service Schedule</h5>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.RecurrenceType, "Recurrence Type", htmlAttributes: new { @class = "form-label required" })
+                        <div class="input-group">
+                            <i class="fas fa-clock input-icon"></i>
+                            @Html.DropDownListFor(m => m.RecurrenceType, (SelectList)ViewBag.RecurrenceOptions, "Select recurrence", new { @class = "form-control" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.RecurrenceType, "", new { @class = "text-danger validation-message" })
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.NextServiceDate, "Next Service Date", htmlAttributes: new { @class = "form-label required" })
+                        <div class="input-group">
+                            <i class="fas fa-calendar-check input-icon"></i>
+                            @Html.TextBoxFor(m => m.NextServiceDate, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.NextServiceDate, "", new { @class = "text-danger validation-message" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.ServiceNotes, "Service Notes", htmlAttributes: new { @class = "form-label" })
+                    <div class="input-group">
+                        <i class="fas fa-wrench input-icon"></i>
+                        @Html.TextAreaFor(m => m.ServiceNotes, new { @class = "form-control", rows = 3, placeholder = "Optional service notes..." })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.ServiceNotes, "", new { @class = "text-danger validation-message" })
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check me-2"></i>Assign Vehicle & Create Schedule
+                </button>
+                @Html.ActionLink("Cancel", "Details", new { id = Model.UserId }, new { @class = "btn btn-secondary" })
+            </div>
+        }
     </div>
+</div>
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.Notes)
-        @Html.TextAreaFor(m => m.Notes, new { @class = "form-control" })
-    </div>
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
 
-    <h4>Service Schedule</h4>
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.RecurrenceType, "Recurrence")
-        @Html.DropDownListFor(m => m.RecurrenceType, (SelectList)ViewBag.RecurrenceOptions, "Select recurrence", new { @class = "form-control" })
-    </div>
+        /* Header Styling */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.NextServiceDate, "Next Service Date")
-        @Html.TextBoxFor(m => m.NextServiceDate, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control" })
-    </div>
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.ServiceNotes)
-        @Html.TextAreaFor(m => m.ServiceNotes, new { @class = "form-control" })
-    </div>
+        /* Form Card */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
 
-    <button type="submit" class="btn btn-primary">Assign & Schedule</button>
+        /* Form Sections */
+        .form-section {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .section-header h5 {
+            margin: 0;
+            color: var(--text-dark);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Form Layout */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger-color);
+        }
+
+        /* Input Styling */
+        .input-group {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            z-index: 5;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            background: white;
+        }
+
+        .input-group .form-control {
+            padding-left: 2.75rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-control:hover {
+            border-color: #c1c9d0;
+        }
+
+        /* Select Styling */
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 3rem;
+        }
+
+        .input-group select.form-control {
+            padding-right: 3rem;
+        }
+
+        /* Textarea Styling */
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Validation Messages */
+        .validation-message {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--danger-color);
+            font-weight: 500;
+        }
+
+        /* Alert Styling */
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--success-color);
+        }
+
+        /* Form Actions */
+        .form-actions {
+            padding: 2rem;
+            background: #f8f9fa;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Button Styling */
+        .btn {
+            font-weight: 600;
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2c3e50;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .form-section {
+                padding: 1.5rem;
+            }
+
+            .form-actions {
+                padding: 1.5rem;
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .container-fluid {
+                padding: 1rem;
+            }
+
+            .form-section {
+                padding: 1rem;
+            }
+
+            .form-actions {
+                padding: 1rem;
+            }
+        }
+
+        /* Animation for page load */
+        .form-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Utilities */
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .align-items-center {
+            align-items: center;
+        }
+    </style>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(function () {
+            // Auto-calculate next service date based on recurrence type
+            $('#RecurrenceType').change(function () {
+                var purchaseDate = new Date($('#PurchaseDate').val());
+                if (isNaN(purchaseDate)) return;
+
+                var recurrence = $(this).val();
+                var nextServiceDate = new Date(purchaseDate);
+
+                switch (recurrence) {
+                    case 'Monthly':
+                        nextServiceDate.setMonth(purchaseDate.getMonth() + 1);
+                        break;
+                    case 'Quarterly':
+                        nextServiceDate.setMonth(purchaseDate.getMonth() + 3);
+                        break;
+                    case '6 Months':
+                        nextServiceDate.setMonth(purchaseDate.getMonth() + 6);
+                        break;
+                    case 'Yearly':
+                        nextServiceDate.setFullYear(purchaseDate.getFullYear() + 1);
+                        break;
+                }
+
+                // Format date as yyyy-mm-dd for the date input
+                var formattedDate = nextServiceDate.toISOString().split('T')[0];
+                $('#NextServiceDate').val(formattedDate);
+            });
+
+            // Also trigger when purchase date changes
+            $('#PurchaseDate').change(function () {
+                $('#RecurrenceType').trigger('change');
+            });
+        });
+    </script>
 }

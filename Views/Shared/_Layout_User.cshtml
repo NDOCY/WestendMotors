@@ -8,34 +8,292 @@
     @Scripts.Render("~/bundles/modernizr")
     @RenderSection("Styles", required: false)
     <style>
-        /* Additional styles for better appearance */
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+            padding-top: 80px;
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            box-shadow: var(--shadow);
+            border: none;
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-brand:hover {
+            color: #ecf0f1 !important;
+            text-decoration: none;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            margin: 0 0.25rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            background: rgba(255,255,255,0.1);
+            text-decoration: none;
+        }
+
+        .navbar-nav .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white !important;
+        }
+
+        /* User Avatar and Dropdown */
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background-color: #0d6efd;
+            background: linear-gradient(135deg, var(--accent-color), #2980b9);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 0.75rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .navbar-nav .dropdown-menu {
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            color: white !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .dropdown-toggle:hover {
+            background: rgba(255,255,255,0.1);
+            color: white !important;
+            text-decoration: none;
+        }
+
+        .dropdown-toggle::after {
+            margin-left: 0.75rem;
+            border-top-color: rgba(255,255,255,0.8);
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
             border: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-hover);
+            border-radius: 12px;
+            padding: 0.5rem 0;
+            background: var(--card-bg);
+            margin-top: 0.5rem;
+            min-width: 180px;
         }
 
         .dropdown-item {
-            padding: 0.5rem 1.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
         }
 
-            .dropdown-item:hover {
-                background-color: #f8f9fa;
+        .dropdown-item:hover {
+            background: var(--light-bg);
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .dropdown-divider {
+            margin: 0.5rem 0;
+            border-color: var(--border-color);
+        }
+
+        /* Navbar Toggle for Mobile */
+        .navbar-toggler {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .navbar-toggler:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        /* Container Styling */
+        .container.body-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Footer Styling */
+        footer {
+            margin-top: 3rem;
+            padding: 2rem 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+            box-shadow: var(--shadow);
+        }
+
+        footer p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            body {
+                padding-top: 70px;
             }
 
-        body {
-            padding-top: 80px;
+            .navbar {
+                padding: 0.5rem 0;
+            }
+
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+
+            .navbar-nav .nav-link {
+                padding: 0.75rem 1rem !important;
+                margin: 0;
+            }
+
+            .dropdown-toggle {
+                justify-content: center;
+                padding: 0.75rem 1rem !important;
+            }
+
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                margin-right: 0.5rem;
+            }
+
+            .container.body-content {
+                padding: 0 0.75rem;
+            }
+
+            footer {
+                margin-top: 2rem;
+                padding: 1.5rem 0;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+
+            .dropdown-toggle span {
+                display: none;
+            }
+
+            .user-avatar {
+                margin-right: 0;
+            }
+
+            .dropdown-menu {
+                min-width: 160px;
+            }
+        }
+
+        /* Focus Styles for Accessibility */
+        .navbar-nav .nav-link:focus,
+        .dropdown-toggle:focus,
+        .dropdown-item:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Animation for dropdown */
+        .dropdown-menu {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            display: block;
+            visibility: hidden;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Content spacing */
+        .body-content > * {
+            margin-bottom: 1rem;
+        }
+
+        .body-content > *:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Enhanced navbar collapse for better UX */
+        .navbar-collapse {
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        @@media (min-width: 576px) {
+            .navbar-collapse {
+                background: none;
+                margin-top: 0;
+                backdrop-filter: none;
+            }
         }
     </style>
 </head>
@@ -58,7 +316,7 @@
 
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">@Html.ActionLink("Vehicles", "Index", "Vehicles", new { area = "" }, new { @class = "nav-link" })</li>
+                    @*<li class="nav-item">@Html.ActionLink("Vehicles", "Index", "Vehicles", new { area = "" }, new { @class = "nav-link" })</li>*@
                     <li class="nav-item">@Html.ActionLink("Appointments", "Index", "Appointments", new { area = "" }, new { @class = "nav-link" })</li>
                     <li class="nav-item">@Html.ActionLink("Trade-In", "Index", "TradeInRequests", new { area = "" }, new { @class = "nav-link" })</li>
                 </ul>
@@ -75,7 +333,17 @@
                             <span>@(Session["FullName"] ?? "User")</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="/Users/Details/1">My Profile</a></li>
+                            @{
+                                var userId = Session["UserId"] as int?;
+                                if (userId.HasValue)
+                                {
+                                    <li><a class="dropdown-item" href="/Users/Details/@userId">My Profile</a></li>
+                                }
+                                else
+                                {
+                                    <li><a class="dropdown-item" href="/Users/Login">My Profile</a></li>
+                                }
+                            } 
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="/Users/Logout">Sign Out</a></li>
                         </ul>

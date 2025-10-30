@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
@@ -8,7 +9,15 @@ namespace WestendMotors.Models
 {
 	public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext() : base("WestendDB") { }
+        public ApplicationDbContext() : base("WestendDB") 
+        {
+            // ADD THESE LINES:
+            //Database.SetInitializer(new DropCreateDatabaseIfModelChanges<ApplicationDbContext>());
+            //Database.Initialize(true); // This forces initialization
+                                       // USE THIS SAFE APPROACH INSTEAD:
+            Database.SetInitializer(new CreateDatabaseIfNotExists<ApplicationDbContext>());
+        }
+
 
         public DbSet<User> Users { get; set; }
         public DbSet<Vehicle> Vehicles { get; set; }
@@ -31,12 +40,6 @@ namespace WestendMotors.Models
                 .WithRequired(vs => vs.Vehicle)
                 .WillCascadeOnDelete(true);
 
-            // Alternative configuration if the above doesn't work:
-            // modelBuilder.Entity<VehicleSpecs>()
-            //     .HasRequired(vs => vs.Vehicle)
-            //     .WithOptional(v => v.Specs)
-            //     .WillCascadeOnDelete(true);
-
             // Configure Vehicle-VehicleImage one-to-many relationship
             modelBuilder.Entity<VehicleImage>()
                 .HasRequired(vi => vi.Vehicle)
@@ -44,12 +47,43 @@ namespace WestendMotors.Models
                 .HasForeignKey(vi => vi.VehicleId)
                 .WillCascadeOnDelete(true);
 
-            base.OnModelCreating(modelBuilder);
-
-            // Configure one-to-one relationship between UserVehicle and ServiceSchedule
+            // Configure User-UserVehicle one-to-many relationship
             modelBuilder.Entity<UserVehicle>()
-                .HasOptional(uv => uv.ServiceSchedule)        // UserVehicle optionally has one ServiceSchedule
-                .WithRequired(ss => ss.UserVehicle);
+                .HasRequired(uv => uv.User)
+                .WithMany(u => u.UserVehicles)
+                .HasForeignKey(uv => uv.UserId)
+                .WillCascadeOnDelete(false);
+
+            // Configure Vehicle-UserVehicle one-to-many relationship
+            modelBuilder.Entity<UserVehicle>()
+                .HasRequired(uv => uv.Vehicle)
+                .WithMany()
+                .HasForeignKey(uv => uv.VehicleId)
+                .WillCascadeOnDelete(false);
+
+            // Configure UserVehicle-ServiceSchedule one-to-many relationship
+            modelBuilder.Entity<ServiceSchedule>()
+                .HasRequired(ss => ss.UserVehicle)
+                .WithMany(uv => uv.ServiceSchedules)
+                .HasForeignKey(ss => ss.UserVehicleId)
+                .WillCascadeOnDelete(true);
+
+            modelBuilder.Entity<ServiceSchedule>()
+        .HasKey(s => s.Id); // Explicitly define the primary key
+
+            modelBuilder.Entity<ServiceSchedule>()
+                .Property(s => s.Id)
+                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
+            modelBuilder.Entity<ServiceSchedule>()
+                .HasRequired(ss => ss.UserVehicle)
+                .WithMany(uv => uv.ServiceSchedules)
+                .HasForeignKey(ss => ss.UserVehicleId)
+                .WillCascadeOnDelete(true);
+
+            
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

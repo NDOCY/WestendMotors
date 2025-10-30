@@ -13,12 +13,12 @@ namespace WestendMotors.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202508111615385_InitialCreate"; }
+            get { return "202509240026269_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source
         {
-            get { return null; }
+            get { return Resources.GetString("Source"); }
         }
         
         string IMigrationMetadata.Target

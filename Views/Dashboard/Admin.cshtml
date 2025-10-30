@@ -143,17 +143,17 @@
                             <tbody>
                                 @foreach (var appt in Model.UpcomingAppointments)
                                 {
-                                    <tr>
-                                        <td class="font-medium">@appt.Customer.FullName</td>
-                                        <td>@appt.AppointmentDate.ToString("MMM dd, yyyy HH:mm")</td>
-                                        <td>@appt.Vehicle?.Title</td>
-                                        <td>
-                                            <a href="@Url.Action("Details", "Appointments", new { id = appt.AppointmentId })"
-                                               class="btn-action">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                   <tr>
+                                       <td class="font-medium">@(appt.Customer?.FullName ?? "Unknown Customer")</td>
+                                       <td>@appt.AppointmentDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                       <td>@(appt.Vehicle?.Title ?? "No Vehicle")</td>
+                                       <td>
+                                           <a href="@Url.Action("Details", "Appointments", new { id = appt.AppointmentId })"
+                                              class="btn-action">
+                                               <i class="fas fa-eye"></i>
+                                           </a>
+                                       </td>
+                                   </tr>
                                 }
                             </tbody>
                         </table>
@@ -187,12 +187,14 @@
                                 @foreach (var tradeIn in Model.RecentTradeIns)
                                 {
                                     <tr>
-                                        <td class="font-medium">@tradeIn.Customer.FullName</td>
+                                        <td class="font-medium">
+                                            @(tradeIn.Customer?.FullName ?? "Unknown Customer")
+                                        </td>
                                         <td>@tradeIn.Make @tradeIn.Model</td>
                                         <td>
                                             <span class="status-badge @(tradeIn.Status == "Pending" ? "status-pending" :
-                                                         tradeIn.Status == "Approved" ? "status-approved" :
-                                                         "status-rejected")">
+                     tradeIn.Status == "Approved" ? "status-approved" :
+                     "status-rejected")">
                                                 @tradeIn.Status
                                             </span>
                                         </td>
@@ -238,7 +240,7 @@
                                 @foreach (var service in Model.RecentServices)
                                 {
                                     <tr>
-                                        <td class="font-medium">@service.Vehicle.Title</td>
+                                        <td class="font-medium">@(service.Vehicle?.Title ?? "Unknown Vehicle")</td>
                                         <td>@service.ServiceDate.ToString("MMM dd, yyyy")</td>
                                         <td>
                                             <a href="@Url.Action("Details", "ServiceRecords", new { id = service.ServiceRecordId })"

@@ -1,9 +1,7 @@
 ﻿@model WestendMotors.Models.ServiceRecord
-
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Service Record Details";
     var role = Session["Role"] as string;
-
     if (role == "Admin")
     {
         Layout = "~/Views/Shared/_Layout.cshtml";
@@ -14,47 +12,617 @@
     }
 }
 
-<h2>Details</h2>
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div>
+                <h1 class="mb-1">Service Record Details</h1>
+                <p class="text-muted mb-0">Complete service record information</p>
+            </div>
+        </div>
+    </div>
 
-<div>
-    <h4>ServiceRecord</h4>
-    <hr />
-    <dl class="dl-horizontal">
-       @* <dt>
-            @Html.DisplayNameFor(model => model.Vehicle.Make)
-        </dt>
+    <!-- Main Content -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="service-details-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-wrench me-2"></i>Service Information</h5>
+                    <p class="mb-0 text-muted">Record #@Model.ServiceRecordId</p>
+                </div>
+                <div class="card-body">
+                    <div class="details-grid">
+                        @if (Model.Vehicle != null)
+                        {
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-car"></i>
+                                    <span>Vehicle</span>
+                                </div>
+                                <div class="detail-value">
+                                    @Model.Vehicle.Title
+                                </div>
+                            </div>
+                        }
 
-        <dd>
-            @Html.DisplayFor(model => model.Vehicle.Make)
-        </dd>*@
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>Service Date</span>
+                            </div>
+                            <div class="detail-value">
+                                @Model.ServiceDate.ToString("MMM dd, yyyy")
+                            </div>
+                        </div>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.ServiceDate)
-        </dt>
+                        @if (!string.IsNullOrEmpty(Model.ServiceType))
+                        {
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-tools"></i>
+                                    <span>Service Type</span>
+                                </div>
+                                <div class="detail-value">
+                                    <span class="service-type-badge">@Model.ServiceType</span>
+                                </div>
+                            </div>
+                        }
 
-        <dd>
-            @Html.DisplayFor(model => model.ServiceDate)
-        </dd>
+                        @if (Model.Mileage.HasValue && Model.Mileage > 0)
+                        {
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>Mileage</span>
+                                </div>
+                                <div class="detail-value">
+                                    @Model.Mileage.Value.ToString("N0") km
+                                </div>
+                            </div>
+                        }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <i class="fas fa-dollar-sign"></i>
+                                <span>Cost</span>
+                            </div>
+                            <div class="detail-value cost-value">
+                                @(Model.Cost.HasValue ? Model.Cost.Value.ToString("C") : "N/A")
+                            </div>
+                        </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.Description)
-        </dd>
+                        @if (!string.IsNullOrEmpty(Model.ServiceCenter))
+                        {
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-building"></i>
+                                    <span>Service Center</span>
+                                </div>
+                                <div class="detail-value">
+                                    @Model.ServiceCenter
+                                </div>
+                            </div>
+                        }
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Cost)
-        </dt>
+                        @if (Model.NextServiceDue.HasValue)
+                        {
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Next Service Due</span>
+                                </div>
+                                <div class="detail-value">
+                                    @Model.NextServiceDue.Value.ToString("MMM dd, yyyy")
+                                </div>
+                            </div>
+                        }
+                    </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.Cost)
-        </dd>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="description-section mt-4">
+                            <div class="section-header">
+                                <i class="fas fa-file-alt"></i>
+                                <h6>Description</h6>
+                            </div>
+                            <div class="description-content">
+                                @Model.Description
+                            </div>
+                        </div>
+                    }
 
-    </dl>
+                    @if (!string.IsNullOrEmpty(Model.TechnicianNotes))
+                    {
+                        <div class="notes-section mt-4">
+                            <div class="section-header">
+                                <i class="fas fa-user-cog"></i>
+                                <h6>Technician Notes</h6>
+                            </div>
+                            <div class="notes-content">
+                                @Model.TechnicianNotes
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="actions-card mb-4">
+                <div class="card-header">
+                    <h6><i class="fas fa-cogs me-2"></i>Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="action-buttons">
+                        @if (role == "Admin")
+                        {
+                            <a href="@Url.Action("Edit", new { id = Model.ServiceRecordId })" class="btn btn-primary btn-block">
+                                <i class="fas fa-edit me-2"></i>Edit Record
+                            </a>
+                        }
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-block">
+                            <i class="fas fa-arrow-left me-2"></i>Back to List
+                        </a>
+                        @if (Model.Vehicle != null)
+                        {
+                            <a href="@Url.Action("VehicleServiceHistory", "ServiceRecords", new { vehicleId = Model.VehicleId })" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-history me-2"></i>Vehicle History
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Summary -->
+            <div class="summary-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-chart-line me-2"></i>Service Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Service Date</div>
+                            <div class="stat-value">@Model.ServiceDate.ToString("MMM dd, yyyy")</div>
+                        </div>
+                        @if (Model.Cost.HasValue)
+                        {
+                            <div class="stat-item">
+                                <div class="stat-label">Total Cost</div>
+                                <div class="stat-value cost-highlight">@Model.Cost.Value.ToString("C")</div>
+                            </div>
+                        }
+                        @if (Model.Mileage.HasValue)
+                        {
+                            <div class="stat-item">
+                                <div class="stat-label">Vehicle Mileage</div>
+                                <div class="stat-value">@Model.Mileage.Value.ToString("N0") km</div>
+                            </div>
+                        }
+                        @if (Model.NextServiceDue.HasValue)
+                        {
+                            <div class="stat-item">
+                                <div class="stat-label">Next Service</div>
+                                <div class="stat-value next-service">
+                                    @{
+                                        var daysUntilService = (Model.NextServiceDue.Value - DateTime.Today).Days;
+                                        var statusClass = daysUntilService <= 30 ? "text-warning" :
+                                                        daysUntilService <= 7 ? "text-danger" : "text-success";
+                                    }
+                                    <span class="@statusClass">@Model.NextServiceDue.Value.ToString("MMM dd, yyyy")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ServiceRecordId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* Card Styling */
+        .service-details-card,
+        .actions-card,
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+            .card-header h5,
+            .card-header h6 {
+                margin: 0 0 0.5rem 0;
+                font-weight: 600;
+                color: var(--text-dark);
+                display: flex;
+                align-items: center;
+                font-size: 1.25rem;
+            }
+
+            .card-header h6 {
+                font-size: 1rem;
+            }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .detail-label {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-dark);
+            min-width: 160px;
+            margin-right: 1rem;
+        }
+
+            .detail-label i {
+                color: var(--accent-color);
+                width: 20px;
+                margin-right: 0.75rem;
+                text-align: center;
+            }
+
+        .detail-value {
+            flex: 1;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .cost-value {
+            font-weight: 700;
+            color: var(--success-color);
+            font-size: 1.1rem;
+        }
+
+        /* Service Type Badge */
+        .service-type-badge {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--accent-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        /* Description and Notes Sections */
+        .description-section,
+        .notes-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+            .section-header i {
+                color: var(--accent-color);
+                width: 20px;
+                margin-right: 0.75rem;
+                text-align: center;
+            }
+
+            .section-header h6 {
+                margin: 0;
+                font-weight: 600;
+                color: var(--text-dark);
+            }
+
+        .description-content,
+        .notes-content {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            font-weight: 600;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-block {
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background: #2980b9;
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-hover);
+                color: white;
+                text-decoration: none;
+            }
+
+        .btn-outline-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 2px solid var(--border-color);
+        }
+
+            .btn-outline-secondary:hover {
+                background: var(--secondary-color);
+                border-color: var(--secondary-color);
+                color: white;
+                text-decoration: none;
+                transform: translateY(-2px);
+            }
+
+        .btn-outline-primary {
+            background: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+
+            .btn-outline-primary:hover {
+                background: var(--accent-color);
+                border-color: var(--accent-color);
+                color: white;
+                text-decoration: none;
+                transform: translateY(-2px);
+            }
+
+        /* Summary Stats */
+        .summary-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+            .stat-item:last-child {
+                border-bottom: none;
+            }
+
+        .stat-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .cost-highlight {
+            color: var(--success-color);
+            font-size: 1.1rem;
+        }
+
+        .next-service .text-warning {
+            color: var(--warning-color) !important;
+        }
+
+        .next-service .text-danger {
+            color: var(--danger-color) !important;
+        }
+
+        .next-service .text-success {
+            color: var(--success-color) !important;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+                .page-header .d-flex {
+                    flex-direction: column;
+                    align-items: center;
+                }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .card-header,
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            .detail-label {
+                margin-bottom: 0.5rem;
+                margin-right: 0;
+                min-width: auto;
+            }
+
+            .detail-value {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .stat-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-header h5 {
+                font-size: 1.1rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Animation for page load */
+        .service-details-card,
+        .actions-card,
+        .summary-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading states */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+            .btn:disabled:hover {
+                transform: none !important;
+            }
+
+        /* Enhanced hover effects */
+        .detail-item:hover {
+            background: #f1f5f9;
+            transform: translateX(2px);
+        }
+
+        .stat-item:hover {
+            background: rgba(52, 152, 219, 0.03);
+        }
+    </style>
+}

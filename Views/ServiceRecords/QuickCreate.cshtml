@@ -1,0 +1,648 @@
+﻿@model WestendMotors.Models.ServiceRecordViewModel
+@{
+    ViewBag.Title = "Add Service Record";
+    var role = Session["Role"] as string;
+    if (role == "Admin")
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout_User.cshtml";
+    }
+}
+
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <div>
+                <h1 class="mb-1">Add Service Record</h1>
+                <p class="text-muted mb-0">Record a new service entry for this vehicle</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="service-record-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clipboard-list me-2"></i>Service Details</h5>
+                    <p class="mb-0 text-muted">Complete the form to add this service record</p>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("QuickCreate", "ServiceRecords"))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.VehicleId)
+
+                        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                        <!-- Vehicle Display (Read-only) -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-car me-2"></i>Vehicle
+                            </label>
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                                @Html.DropDownListFor(model => model.VehicleId, Model.Vehicles, new { @class = "form-control form-control-readonly", @readonly = "readonly", @disabled = "disabled" })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.VehicleId, "", new { @class = "validation-message" })
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-calendar-alt me-2"></i>Service Date
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        @Html.EditorFor(model => model.ServiceDate, new { htmlAttributes = new { @class = "form-control", type = "date" } })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.ServiceDate, "", new { @class = "validation-message" })
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label required">
+                                        <i class="fas fa-tools me-2"></i>Service Type
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-tools"></i>
+                                        </div>
+                                        @Html.DropDownListFor(model => model.ServiceType, Model.ServiceTypes, "Select Service Type", new { @class = "form-control" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.ServiceType, "", new { @class = "validation-message" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">
+                                <i class="fas fa-file-alt me-2"></i>Description
+                            </label>
+                            @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 3, placeholder = "Describe the service performed..." })
+                            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "validation-message" })
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Mileage (km)
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-tachometer-alt"></i>
+                                        </div>
+                                        @Html.EditorFor(model => model.Mileage, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", placeholder = "Current mileage" } })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.Mileage, "", new { @class = "validation-message" })
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-dollar-sign me-2"></i>Cost
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-icon">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </div>
+                                        @Html.EditorFor(model => model.Cost, new { htmlAttributes = new { @class = "form-control", type = "number", min = "0", step = "0.01", placeholder = "0.00" } })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.Cost, "", new { @class = "validation-message" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-building me-2"></i>Service Center
+                            </label>
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                @Html.EditorFor(model => model.ServiceCenter, new { htmlAttributes = new { @class = "form-control", placeholder = "Service center name" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ServiceCenter, "", new { @class = "validation-message" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user-cog me-2"></i>Technician Notes
+                            </label>
+                            @Html.TextAreaFor(model => model.TechnicianNotes, new { @class = "form-control", rows = 3, placeholder = "Technician notes and recommendations..." })
+                            @Html.ValidationMessageFor(model => model.TechnicianNotes, "", new { @class = "validation-message" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-check me-2"></i>Next Service Due
+                            </label>
+                            <div class="input-group">
+                                <div class="input-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                @Html.EditorFor(model => model.NextServiceDue, new { htmlAttributes = new { @class = "form-control", type = "date" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.NextServiceDue, "", new { @class = "validation-message" })
+                            <small class="form-text">When should the next service be scheduled?</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Create Service Record
+                            </button>
+                            @Html.ActionLink("Cancel", "VehicleServiceHistory", new { vehicleId = Model.VehicleId },
+                                new { @class = "btn btn-outline-secondary btn-lg" })
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Tips Card -->
+            <div class="info-card mt-4">
+                <div class="info-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h6>Service Record Tips</h6>
+                </div>
+                <div class="info-content">
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle tip-icon"></i>
+                        <span>Include detailed descriptions for future reference</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle tip-icon"></i>
+                        <span>Record exact mileage for accurate maintenance tracking</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle tip-icon"></i>
+                        <span>Set realistic next service dates based on manufacturer recommendations</span>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle tip-icon"></i>
+                        <span>Save technician notes for warranty and insurance purposes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Matching Dashboard Theme - Clean Automotive Design */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e1e8ed;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* Service Record Card */
+        .service-record-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h5 {
+            margin: 0 0 0.5rem 0;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger-color);
+            margin-left: 0.25rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            z-index: 5;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .input-group .form-control {
+            padding-left: 2.75rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-control:hover:not(:disabled) {
+            border-color: #c1c9d0;
+        }
+
+        /* Read-only form control styling */
+        .form-control-readonly {
+            background-color: #f8f9fa !important;
+            color: var(--text-muted) !important;
+            cursor: not-allowed;
+        }
+
+        .form-control:disabled,
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            border-color: #dee2e6;
+        }
+
+        /* Textarea specific styling */
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Select dropdown styling */
+        select.form-control:not(.form-control-readonly) {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            appearance: none;
+        }
+
+        .form-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* Validation Messages */
+        .validation-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .validation-message::before {
+            content: '\f071';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            margin-right: 0.5rem;
+        }
+
+        /* Alert Styling */
+        .alert {
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-start;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Button Styling */
+        .btn {
+            font-weight: 600;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-outline-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Information Card */
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .info-header {
+            background: linear-gradient(135deg, var(--warning-color), #e0a800);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-header i {
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+
+        .info-header h6 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .info-content {
+            padding: 1.5rem;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .tip-item:last-child {
+            border-bottom: none;
+        }
+
+        .tip-icon {
+            color: var(--success-color);
+            margin-right: 1rem;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .tip-item span {
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .page-header .d-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .header-icon {
+                margin: 0 auto 1rem auto;
+            }
+
+            .card-header,
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .row .col-md-6 {
+                margin-bottom: 1rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .form-actions {
+                gap: 0.75rem;
+            }
+
+            .btn-lg {
+                padding: 0.875rem 1.5rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-header h5 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        .btn:focus,
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Animation for page load */
+        .service-record-card,
+        .info-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading states */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn:disabled:hover {
+            transform: none !important;
+        }
+
+        /* Input focus enhancements */
+        .form-control:focus + .input-icon {
+            color: var(--accent-color);
+        }
+
+        /* Better spacing for icon labels */
+        .form-label i {
+            margin-right: 0.5rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Error state styling */
+        .form-control.error {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.1);
+        }
+
+        /* Success state styling */
+        .form-control.success {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.1);
+        }
+
+        /* Enhanced form layout */
+        .row {
+            margin-left: -0.5rem;
+            margin-right: -0.5rem;
+        }
+
+        .row > [class*="col-"] {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    </style>
+}

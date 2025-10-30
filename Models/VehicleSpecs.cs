@@ -36,7 +36,7 @@ namespace WestendMotors.Models
         [StringLength(30)]
         public string Color { get; set; } = "";
 
-        public double EngineSize { get; set; }
+        public string EngineSize { get; set; }
 
         [Required]
         [Display(Name = "Number of Seats")]

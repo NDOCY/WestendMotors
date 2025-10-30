@@ -12,36 +12,22 @@ namespace WestendMotors.Services
         private readonly BlobServiceClient _blobServiceClient;
         private const string ContainerName = "westendmotors";
 
-        public BlobService(string connectionString)
+        public BlobService()
         {
+            // Get connection string from Web.config
+            var connectionString = System.Configuration.ConfigurationManager.AppSettings["AzureBlobConnection"];
             _blobServiceClient = new BlobServiceClient(connectionString);
         }
-        /*
-        public async Task<string> UploadVehicleImageAsync(HttpPostedFileBase file)
-        {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
-            await containerClient.CreateIfNotExistsAsync();
 
-            // Generate unique filename with original extension
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-            var blobClient = containerClient.GetBlobClient(fileName);
-
-            using (var stream = file.InputStream)
-            {
-                await blobClient.UploadAsync(stream, overwrite: true);
-            }
-
-            return blobClient.Uri.ToString();
-        }*/
-        public async Task<string> UploadVehicleImageAsync(HttpPostedFileBase file)
+        public async Task<string> UploadImageAsync(HttpPostedFileBase file, string folderName = "vehicles")
         {
             try
             {
-                var containerClient = _blobServiceClient.GetBlobContainerClient("westendmotors");
+                var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
                 await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
-                // Generate unique filename
-                var fileName = $"vehicles/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                // Generate unique filename with folder structure
+                var fileName = $"{folderName}/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
                 var blobClient = containerClient.GetBlobClient(fileName);
 
                 // Set content type
@@ -67,32 +53,54 @@ namespace WestendMotors.Services
             }
         }
 
-        public async Task<string> UploadImageAsync(HttpPostedFileBase file)
+        public async Task<string> UploadTradeInImageAsync(HttpPostedFileBase file)
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient("westendmotors");
-            await containerClient.CreateIfNotExistsAsync();
+            return await UploadImageAsync(file, "tradeins");
+        }
 
-            // Keep the same simple filename generation
-            var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-            var blobClient = containerClient.GetBlobClient(fileName);
-
-            using (var stream = file.InputStream)
-            {
-                await blobClient.UploadAsync(stream, overwrite: true);
-            }
-
-            return blobClient.Uri.ToString();
+        public async Task<string> UploadVehicleImageAsync(HttpPostedFileBase file)
+        {
+            return await UploadImageAsync(file, "vehicles");
         }
 
         public async Task DeleteImageAsync(string blobUrl)
         {
+            try
+            {
+                var uri = new Uri(blobUrl);
+                var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
+
+                // C# 7.3 compatible way to get blob name
+                var blobName = GetBlobNameFromUrl(blobUrl);
+
+                var blobClient = containerClient.GetBlobClient(blobName);
+                await blobClient.DeleteIfExistsAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError($"Blob deletion failed: {ex}");
+                throw;
+            }
+        }
+
+        // Helper method to extract blob name from URL (C# 7.3 compatible)
+        private string GetBlobNameFromUrl(string blobUrl)
+        {
             var uri = new Uri(blobUrl);
-            var blobName = Path.GetFileName(uri.LocalPath);
+            // Get the path and remove leading slash
+            var path = uri.AbsolutePath;
+            if (path.StartsWith("/"))
+            {
+                path = path.Substring(1);
+            }
 
-            var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
-            var blobClient = containerClient.GetBlobClient(blobName);
+            // Remove container name from path
+            if (path.StartsWith(ContainerName + "/"))
+            {
+                path = path.Substring(ContainerName.Length + 1);
+            }
 
-            await blobClient.DeleteIfExistsAsync();
+            return path;
         }
     }
 }

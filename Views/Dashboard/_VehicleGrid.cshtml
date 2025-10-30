@@ -1,33 +1,46 @@
 ﻿@model WestendMotors.Models.DashboardViewModel
 
-<div class="row" id="vehicle-grid">
+<div class="row" id="vehicle-grid" data-total="@Model.TotalItems">
     @if (!Model.Vehicles.Any())
     {
         <div class="col-12">
-            <div class="alert alert-info">No vehicles match your filters.</div>
+            <div class="alert alert-info text-center py-4">
+                <i class="fas fa-search fa-2x mb-3"></i>
+                <h4>No vehicles found</h4>
+                <p class="mb-0">Try adjusting your filters to see more results.</p>
+            </div>
         </div>
     }
     else
     {
         foreach (var car in Model.Vehicles)
         {
-            <div class="col-md-4 mb-4">
+            <div class="col-md-4 mb-4 vehicle-item">
                 <div class="card shadow-sm h-100">
                     @{
                         var img = (car.Images != null && car.Images.Any()) ? car.Images.First().ImagePath : "/images/no-image.jpg";
                     }
-                    <img src="@Url.Content(img)" class="card-img-top" style="height: 200px; object-fit: cover;" />
+                    <img src="@Url.Content(img)" class="card-img-top" alt="@car.Title" style="height: 200px; object-fit: cover;" />
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">@car.Title</h5>
                         <p class="card-text mb-2"><strong>@car.Price.ToString("C")</strong></p>
                         @if (car.Specs != null)
                         {
-                            <p class="small text-muted mb-3">@car.Specs.Make @car.Specs.Model • @car.Specs.Year</p>
+                            <p class="small text-muted mb-3">
+                                @car.Specs.Make @car.Specs.Model • @car.Specs.Year
+                                @if (!string.IsNullOrEmpty(car.Specs.FuelType))
+                                {
+                                    <text>• @car.Specs.FuelType</text>
+                                }
+                                @if (!string.IsNullOrEmpty(car.Specs.Transmission))
+                                {
+                                    <text>• @car.Specs.Transmission</text>
+                                }
+                            </p>
                         }
-                    <div class="mt-auto">
-                        @Html.ActionLink("View Details", "Details", "Vehicles", new { id = car.Id }, new { @class = "btn btn-primary btn-sm" })
-
-                    </div>
+                        <div class="mt-auto">
+                            @Html.ActionLink("View Details", "Details", "Vehicles", new { id = car.Id }, new { @class = "btn btn-primary btn-sm" })
+                        </div>
                     </div>
                 </div>
             </div>
@@ -39,7 +52,7 @@
 @if (Model.TotalPages > 1)
 {
     <nav>
-        <ul class="pagination">
+        <ul class="pagination justify-content-center">
             <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
                 <a href="#" class="page-link ajax-page" data-page="@(Model.Page - 1)">Previous</a>
             </li>

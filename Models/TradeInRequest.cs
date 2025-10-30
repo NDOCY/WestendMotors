@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WestendMotors.Models
 {
@@ -48,6 +49,17 @@ namespace WestendMotors.Models
 
         [Display(Name = "Request Date")]
         public DateTime RequestDate { get; set; } = DateTime.Now;
+        // ADD THESE STAFF ASSIGNMENT PROPERTIES
+        public int? AssignedStaffId { get; set; }
+
+        [ForeignKey("AssignedStaffId")]
+        public virtual User AssignedStaff { get; set; }
+
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Assigned Date")]
+        public DateTime? AssignedDate { get; set; }
+
+
 
         // Navigation properties
         public virtual ICollection<TradeInImage> Images { get; set; } = new List<TradeInImage>();
@@ -83,6 +95,16 @@ namespace WestendMotors.Models
 
         [Display(Name = "Created Date")]
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        // Staff assignment (already exists in your model)
+        public int? AssignedStaffId { get; set; }
+
+        [ForeignKey("AssignedStaffId")]
+        public virtual User AssignedStaff { get; set; }
+
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Assigned Date")]
+        public DateTime? AssignedDate { get; set; }
 
         // Navigation property
         public virtual TradeInRequest TradeInRequest { get; set; }

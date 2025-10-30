@@ -1,9 +1,71 @@
-﻿@{
-    ViewBag.Title = "Appointment Booked";
-    Layout = "~/Views/Shared/_Layout_User.cshtml";
+﻿@model WestendMotors.Models.Appointment
+@{
+    ViewBag.Title = "Appointment Confirmation";
+    var isTestDrive = Model.AppointmentType == "Test Drive";
+    var isService = Model.AppointmentType == "Service";
 }
 
-<h2>Thank you!</h2>
-<p>Your test drive appointment has been successfully booked. We will contact you shortly to confirm the details.</p>
+<div class="alert alert-success">
+    <h2>
+        <i class="fas @(isTestDrive ? "fa-car" : isService ? "fa-tools" : "fa-calendar-check") me-2"></i>
+        @(isTestDrive ? "Test Drive" : isService ? "Service" : "Appointment") Booked Successfully!
+    </h2>
+</div>
 
-<p>@Html.ActionLink("Back to vehicles", "Index", "Dashboard", null, new { @class = "btn btn-primary" })</p>
+<div class="well">
+    <h4>Appointment Details</h4>
+    <dl class="dl-horizontal">
+        <dt>Type:</dt>
+        <dd>@Model.AppointmentType</dd>
+
+        @if (Model.VehicleId.HasValue)
+        {
+            <dt>Vehicle:</dt>
+            <dd>@(Model.Vehicle?.Title ?? "N/A")</dd>
+        }
+
+        @if (isService && !string.IsNullOrEmpty(Model.ServiceType))
+        {
+            <dt>Service Type:</dt>
+            <dd>@Model.ServiceType</dd>
+        }
+
+        <dt>Date & Time:</dt>
+        <dd>@Model.AppointmentDate.ToString("f")</dd>
+
+        <dt>Status:</dt>
+        <dd><span class="label label-info">@Model.Status</span></dd>
+
+        <dt>Reference #:</dt>
+        <dd>#@Model.AppointmentId.ToString("D6")</dd>
+    </dl>
+</div>
+
+<!-- Different messages based on appointment type -->
+@if (isTestDrive)
+{
+    <div class="alert alert-info">
+        <h4>Test Drive Instructions</h4>
+        <p>Please bring your driver's license and arrive 15 minutes before your scheduled time.</p>
+    </div>
+}
+else if (isService)
+{
+    <div class="alert alert-info">
+        <h4>Service Preparation</h4>
+        <p>Please bring your vehicle registration and any service history documents.</p>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("View My Appointments", "Index", null, new { @class = "btn btn-primary" })
+    @if (Model.VehicleId.HasValue)
+    {
+        @Html.ActionLink("Back to Vehicle", "Details", "Vehicles",
+            new { id = Model.VehicleId }, new { @class = "btn btn-default" })
+    }
+    else
+    {
+        @Html.ActionLink("Back to Home", "Index", "Dashboard", null, new { @class = "btn btn-default" })
+    }
+</div>

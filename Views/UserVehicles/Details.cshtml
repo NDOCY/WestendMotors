@@ -1,7 +1,7 @@
 ﻿@model WestendMotors.Models.UserVehicle
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Assignment Details";
     var role = Session["Role"] as string;
 
     if (role == "Admin")
@@ -14,55 +14,104 @@
     }
 }
 
-<h2>Details</h2>
+<h2>Assignment Details</h2>
 
 <div>
-    <h4>UserVehicle</h4>
+    <h4>Vehicle Assignment</h4>
     <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.ServiceSchedule.RecurrenceType)
-        </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.ServiceSchedule.RecurrenceType)
-        </dd>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h5 class="panel-title">Assignment Information</h5>
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>Customer:</dt>
+                        <dd>@Html.DisplayFor(model => model.User.FullName)</dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.User.FullName)
-        </dt>
+                        <dt>Vehicle:</dt>
+                        <dd>@Html.DisplayFor(model => model.Vehicle.Title)</dd>
 
-        <dd>
-            @Html.DisplayFor(model => model.User.FullName)
-        </dd>
+                        <dt>Purchase Date:</dt>
+                        <dd>@Model.PurchaseDate.ToString("d")</dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Vehicle.Title)
-        </dt>
+                        <dt>Notes:</dt>
+                        <dd>@(string.IsNullOrEmpty(Model.Notes) ? "None" : Model.Notes)</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.Vehicle.Title)
-        </dd>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h5 class="panel-title">Service Information</h5>
+                </div>
+                <div class="panel-body">
+                    @if (Model.ServiceSchedules != null && Model.ServiceSchedules.Any())
+                    {
+                        var serviceSchedule = Model.ServiceSchedules.First();
+                        <dl class="dl-horizontal">
+                            <dt>Recurrence Type:</dt>
+                            <dd>@serviceSchedule.RecurrenceType</dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.PurchaseDate)
-        </dt>
+                            <dt>Next Service Date:</dt>
+                            <dd>@serviceSchedule.NextServiceDate.ToString("d")</dd>
 
-        <dd>
-            @Html.DisplayFor(model => model.PurchaseDate)
-        </dd>
+                            <dt>Service Notes:</dt>
+                            <dd>@(string.IsNullOrEmpty(serviceSchedule.Notes) ? "None" : serviceSchedule.Notes)</dd>
+                        </dl>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No service schedule configured.</p>
+                        @Html.ActionLink("Create Service Schedule", "SetServiceSchedule", new { userVehicleId = Model.Id }, new { @class = "btn btn-success btn-sm" })
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Notes)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Notes)
-        </dd>
-
-    </dl>
+    <!-- Show all service schedules if there are multiple -->
+    @if (Model.ServiceSchedules != null && Model.ServiceSchedules.Count > 1)
+    {
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h5 class="panel-title">All Service Schedules</h5>
+            </div>
+            <div class="panel-body">
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Recurrence Type</th>
+                            <th>Next Service Date</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var schedule in Model.ServiceSchedules.OrderBy(s => s.NextServiceDate))
+                        {
+                            <tr>
+                                <td>@schedule.RecurrenceType</td>
+                                <td>@schedule.NextServiceDate.ToString("d")</td>
+                                <td>@(string.IsNullOrEmpty(schedule.Notes) ? "None" : schedule.Notes)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+
+<div class="form-actions">
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }, new { @class = "btn btn-warning" })
+    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-default" })
+
+    @if (Model.ServiceSchedules == null || !Model.ServiceSchedules.Any())
+    {
+        @Html.ActionLink("Add Service Schedule", "SetServiceSchedule", new { userVehicleId = Model.Id }, new { @class = "btn btn-success" })
+    }
+</div>
